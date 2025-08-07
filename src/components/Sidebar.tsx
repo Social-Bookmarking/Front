@@ -10,7 +10,7 @@ const categories = [
   { name: '비즈니스', count: 3 },
 ];
 
-export default function Sidebar() {
+const Sidebar = () => {
   const [selectedCategory, setSelectedCategory] = useState('전체');
 
   return (
@@ -66,4 +66,6 @@ export default function Sidebar() {
       </div>
     </aside>
   );
-}
+};
+
+export default Sidebar;
