@@ -1,17 +1,21 @@
 import { FolderOpen, Users, Settings, Plus } from 'lucide-react';
-import { useState } from 'react';
-
-// 나중에 관리 해야함
-const categories = [
-  { name: '전체', count: 28 },
-  { name: '디자인', count: 12 },
-  { name: '개발', count: 8 },
-  { name: '마케팅', count: 5 },
-  { name: '비즈니스', count: 3 },
-];
+import { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '../Util/hook';
+import {
+  fetchCategories,
+  selectCategories,
+  selectSelectedId,
+  selectCategory,
+} from '../Util/categorySlice';
 
 const Sidebar = () => {
-  const [selectedCategory, setSelectedCategory] = useState('전체');
+  const dispatch = useAppDispatch();
+  const categories = useAppSelector(selectCategories);
+  const selectedId = useAppSelector(selectSelectedId);
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   return (
     <aside className="w-64 h-screen p-4 border-r-2 border-[#E6E5F2] bg-[#fafafa] flex flex-col">
@@ -45,11 +49,11 @@ const Sidebar = () => {
       {/* 카테고리 목록 */}
       <div className="flex flex-col gap-1 text-sm">
         {categories.map((cat) => {
-          const isSelected = cat.name === selectedCategory;
+          const isSelected = cat.id === selectedId;
           return (
             <button
-              key={cat.name}
-              onClick={() => setSelectedCategory(cat.name)}
+              key={cat.id}
+              onClick={() => dispatch(selectCategory(cat.id))}
               className={`flex items-center justify-between px-3 py-2 rounded transition ${
                 isSelected
                   ? 'bg-[#7C3BED] text-white font-medium'
