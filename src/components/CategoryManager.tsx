@@ -7,12 +7,12 @@ import {
   selectSelectedId,
   selectCatStatus,
   selectCategory,
-  createCategory,
   renameCategory,
   deleteCategory,
 } from '../Util/categorySlice';
+import { setcategoryAdd } from '../Util/modalSlice';
 
-export default function CategoryManager() {
+const CategoryManager = () => {
   const dispatch = useAppDispatch();
   const categories = useAppSelector(selectCategories);
   const selectedId = useAppSelector(selectSelectedId);
@@ -38,7 +38,7 @@ export default function CategoryManager() {
   };
 
   const onAdd = () => {
-    dispatch(createCategory({ name: '새 카테고리' }));
+    dispatch(setcategoryAdd(true));
   };
 
   const onDelete = (id: string) => {
@@ -74,6 +74,8 @@ export default function CategoryManager() {
                   ? 'border-violet-400 bg-violet-50'
                   : 'border-violet-100 bg-white'
               }`}
+              onClick={() => dispatch(selectCategory(c.id))}
+              title={c.name}
             >
               {/* 왼쪽: 이름 또는 입력 */}
               <div className="flex items-center gap-2 min-w-0">
@@ -88,23 +90,24 @@ export default function CategoryManager() {
                     onChange={(e) => setTempName(e.target.value)}
                     className="text-sm border rounded px-2 py-1 outline-none focus:ring-2 focus:ring-violet-300"
                     autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') commit(c.id);
                       if (e.key === 'Escape') cancel();
                     }}
                   />
                 ) : (
-                  <button
-                    onClick={() => dispatch(selectCategory(c.id))}
-                    className="text-sm text-gray-800 truncate text-left"
-                    title={c.name}
-                  >
+                  <div className="text-sm text-gray-800 truncate text-left">
                     {c.name}
-                  </button>
+                  </div>
                 )}
               </div>
 
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div
+                className="flex items-center gap-2 flex-shrink-0"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {editing ? (
                   <>
                     <button
@@ -150,4 +153,6 @@ export default function CategoryManager() {
       </div>
     </section>
   );
-}
+};
+
+export default CategoryManager;

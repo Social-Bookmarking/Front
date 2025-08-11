@@ -7,6 +7,7 @@ import {
   selectSelectedId,
   selectCategory,
 } from '../Util/categorySlice';
+import { setcategoryAdd } from '../Util/modalSlice';
 
 const Sidebar = () => {
   const dispatch = useAppDispatch();
@@ -40,7 +41,10 @@ const Sidebar = () => {
       {/* 카테고리 헤더 */}
       <div className="flex items-center justify-between text-lg font-semibold mb-2">
         <span>카테고리</span>
-        <button className="p-1 hover:bg-gray-100 text-xs border border-[#E6E5F2] rounded-[6px] h-7 bg-[#FBFAFF] flex items-center gap-1">
+        <button
+          className="p-1 hover:bg-gray-100 text-xs border border-[#E6E5F2] rounded-[6px] h-7 bg-[#FBFAFF] flex items-center gap-1"
+          onClick={() => dispatch(setcategoryAdd(true))}
+        >
           <Plus className="w-3 h-3" />
           추가
         </button>

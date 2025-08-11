@@ -1,20 +1,35 @@
-import Sidebar from './components/Sidebar';
-import Header from './components/Header';
-import Main from './components/Main';
-import { store } from './Util/store';
-import { Provider } from 'react-redux';
+import Sidebar from './Components/Sidebar';
+import Header from './Components/Header';
+import Main from './Components/Main';
+import Modal from './Util/modal';
+import CategoryAddModal from './Modal/CategoryAddModal';
+import { useAppSelector, useAppDispatch } from './Util/hook';
+import { setcategoryAdd } from './Util/modalSlice';
 
 function App() {
+  const isCategoryModal = useAppSelector((state) => state.modal.categoryAdd);
+  const dispatch = useAppDispatch();
+
   return (
-    <Provider store={store}>
+    <>
       <div className="flex h-screen">
-        <Sidebar />
-        <div className="flex-1 flex flex-col">
+        <div className="sticky">
+          <Sidebar />
+        </div>
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Header />
-          <Main />
+          <main className="flex-1 overflow-y-auto">
+            <Main />
+          </main>
         </div>
       </div>
-    </Provider>
+      <Modal
+        isOpen={isCategoryModal}
+        onClose={() => dispatch(setcategoryAdd(false))}
+      >
+        <CategoryAddModal />
+      </Modal>
+    </>
   );
 }
 

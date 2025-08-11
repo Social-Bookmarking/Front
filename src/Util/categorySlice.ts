@@ -16,6 +16,8 @@ const initialState: CategoriesState = {
   status: 'idle',
 };
 
+// 나중에 수정해야 함.
+
 // 목록 가져오기
 export const fetchCategories = createAsyncThunk(
   'categories/fetch',
