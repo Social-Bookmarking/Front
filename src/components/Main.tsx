@@ -43,7 +43,7 @@ const Main = () => {
         <input
           type="text"
           placeholder="⌕ 북마크 검색..."
-          className="w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+          className="w-full px-4 py-2 border border-[#E6E5F2] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
         />
       </div>
 

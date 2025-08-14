@@ -6,8 +6,8 @@ import { store } from './Util/store';
 import { Provider } from 'react-redux';
 
 // 나중에 수정 (목 데이터)
-import { setupCategoryMock } from './Mocks/categories.ts';
-setupCategoryMock();
+import { setupMocks } from './Mocks/mock.ts';
+setupMocks();
 
 createRoot(document.getElementById('root')!).render(
   <Provider store={store}>

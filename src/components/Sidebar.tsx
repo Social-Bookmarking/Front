@@ -7,7 +7,7 @@ import {
   selectSelectedId,
   selectCategory,
 } from '../Util/categorySlice';
-import { setcategoryAdd } from '../Util/modalSlice';
+import { setcategoryAdd, setMemberManger } from '../Util/modalSlice';
 
 const Sidebar = () => {
   const dispatch = useAppDispatch();
@@ -28,7 +28,10 @@ const Sidebar = () => {
 
       {/* 멤버 관리 & 설정 */}
       <div className="space-y-4 ml-3 mb-8">
-        <button className="flex items-center gap-2 text-sm text-gray-700 hover:text-violet-600">
+        <button
+          className="flex items-center gap-2 text-sm text-gray-700 hover:text-violet-600"
+          onClick={() => dispatch(setMemberManger(true))}
+        >
           <Users className="w-4 h-4" />
           멤버 관리
         </button>
