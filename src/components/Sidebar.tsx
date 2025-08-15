@@ -1,4 +1,4 @@
-import { FolderOpen, Users, Settings, Plus } from 'lucide-react';
+import { FolderOpen, Users, Settings, Plus, Home, Map } from 'lucide-react';
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../Util/hook';
 import {
@@ -9,7 +9,13 @@ import {
 } from '../Util/categorySlice';
 import { setcategoryAdd, setMemberManger } from '../Util/modalSlice';
 
-const Sidebar = () => {
+type View = 'home' | 'map';
+interface SidebarProps {
+  view: View;
+  onNavigate: (v: View) => void;
+}
+
+const Sidebar = ({ view, onNavigate }: SidebarProps) => {
   const dispatch = useAppDispatch();
   const categories = useAppSelector(selectCategories);
   const selectedId = useAppSelector(selectSelectedId);
@@ -27,15 +33,36 @@ const Sidebar = () => {
       </div>
 
       {/* 멤버 관리 & 설정 */}
-      <div className="space-y-4 ml-3 mb-8">
+      <div className="space-y-2 ml-2 mb-8">
         <button
-          className="flex items-center gap-2 text-sm text-gray-700 hover:text-violet-600"
+          className={`flex items-center gap-2 text-sm w-full px-3 py-2 rounded ${
+            view === 'home'
+              ? 'bg-[#7C3BED] text-white'
+              : 'text-gray-700 hover:bg-violet-100'
+          }`}
+          onClick={() => onNavigate('home')}
+        >
+          <Home className="w-4 h-4" />홈
+        </button>
+        <button
+          className={`flex items-center gap-2 text-sm w-full px-3 py-2 rounded ${
+            view === 'map'
+              ? 'bg-[#7C3BED] text-white'
+              : 'text-gray-700 hover:bg-violet-100'
+          }`}
+          onClick={() => onNavigate('map')}
+        >
+          <Map className="w-4 h-4" />
+          지도 보기
+        </button>
+        <button
+          className="flex items-center gap-2 text-sm text-gray-700 hover:bg-violet-100 w-full px-3 py-2 rounded"
           onClick={() => dispatch(setMemberManger(true))}
         >
           <Users className="w-4 h-4" />
           멤버 관리
         </button>
-        <button className="flex items-center gap-2 text-sm text-gray-700 hover:text-violet-600">
+        <button className="flex items-center gap-2 text-sm text-gray-700 hover:bg-violet-100 w-full px-3 py-2 rounded">
           <Settings className="w-4 h-4" />
           설정
         </button>
@@ -64,7 +91,7 @@ const Sidebar = () => {
               className={`flex items-center justify-between px-3 py-2 rounded transition ${
                 isSelected
                   ? 'bg-[#7C3BED] text-white font-medium'
-                  : 'text-gray-700 hover:bg-gray-100'
+                  : 'text-gray-700 hover:bg-violet-100'
               }`}
             >
               <span>{cat.name}</span>
