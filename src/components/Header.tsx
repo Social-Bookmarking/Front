@@ -15,15 +15,15 @@ const Header = () => {
       <div className="flex items-center gap-2">
         <button className="flex items-center gap-1 px-3 py-1.5 text-sm border-2 border-[#E6E5F2] hover:bg-gray-100 rounded">
           <Share2 className="w-4 h-4" />
-          초대
+          <span className="hidden md:inline">초대</span>
         </button>
         <button className="flex items-center gap-1 px-3 py-1.5 text-sm border-2 border-[#E6E5F2] hover:bg-gray-100 rounded">
           <Settings className="w-4 h-4" />
-          설정
+          <span className="hidden md:inline">설정</span>
         </button>
         <button className="flex items-center font-medium text-white gap-1 px-3 py-1.5 text-sm bg-[#7C3BED] hover:bg-violet-700 rounded">
           <Plus className="w-4 h-4" />
-          북마크 추가
+          <span className="hidden md:inline">북마크 추가</span>
         </button>
       </div>
     </header>

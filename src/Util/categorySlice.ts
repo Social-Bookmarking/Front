@@ -2,11 +2,11 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-export type Category = { id: string; name: string; count: number };
+export type Category = { id: number; name: string; count: number };
 
 export type CategoriesState = {
   list: Category[];
-  selectedId: string | null;
+  selectedId: number | null;
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
 };
 
@@ -41,7 +41,7 @@ export const createCategory = createAsyncThunk(
 // 수정하기
 export const renameCategory = createAsyncThunk(
   'categories/rename',
-  async (payload: { id: string; name: string }) => {
+  async (payload: { id: number; name: string }) => {
     const res = await axios.put<Category>(
       `/api/categories/${payload.id}`,
       payload
@@ -52,7 +52,7 @@ export const renameCategory = createAsyncThunk(
 // 삭제하기
 export const deleteCategory = createAsyncThunk(
   'categories/delete',
-  async (payload: { id: string }) => {
+  async (payload: { id: number }) => {
     await axios.delete(`/api/categories/${payload.id}`);
     return payload.id;
   }
@@ -62,7 +62,7 @@ const categoriesSlice = createSlice({
   name: 'categories',
   initialState,
   reducers: {
-    selectCategory(state, action: PayloadAction<string>) {
+    selectCategory(state, action: PayloadAction<number>) {
       state.selectedId = action.payload;
     },
   },

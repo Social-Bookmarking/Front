@@ -1,40 +1,34 @@
+import { useEffect, useState } from 'react';
 import BookmarkCard from './BookmarkCard';
-import default_img from '../assets/img/default/default.jpg';
 import CategoryManager from './CategoryManager';
+import { fetchBookmarks, reset } from '../Util/bookmarkSlice';
+import { selectSelectedId } from '../Util/categorySlice';
+import { useAppDispatch, useAppSelector } from '../Util/hook';
 
 const Main = () => {
-  const bookmarks = [
-    {
-      title: '현대적인 워크스페이스 디자인 가이드',
-      description: '효율적이고 창의적인 업무 환경을 위한 디자인 원칙과 실전',
-      imageUrl: default_img,
-      tag: '디자인',
-      url: 'design.workspace.com',
-    },
-    {
-      title: '디자인 서적 추천 리스트',
-      description: '디자이너라면 꼭 읽어야 할 필수 도서들을 엄선했습니다.',
-      imageUrl: default_img,
-      tag: '디자인',
-      url: 'books.design.com',
-    },
-    {
-      title: '모바일 앱 UI/UX 트렌드 2024',
-      description:
-        '올해 주목해야 할 모바일 앱 디자인 트렌드와 사용자 경험 패턴.',
-      imageUrl: default_img,
-      tag: '개발',
-      url: 'mobile.trends.com',
-    },
-    {
-      title: '창의적 작업 공간 만들기',
-      description:
-        '영감을 주는 작업 환경 구성법과 생산성 향상 팁을 공유합니다.',
-      imageUrl: default_img,
-      tag: '디자인',
-      url: 'creative.space.com',
-    },
-  ];
+  const dispatch = useAppDispatch();
+
+  const bookmarks = useAppSelector((s) => s.bookmark.items);
+  const loading = useAppSelector((s) => s.bookmark.loading);
+
+  const selectedCategory = useAppSelector(selectSelectedId);
+
+  const [page, setPage] = useState(1);
+
+  // 카테고리 변경 시 첫 페이지 다시 불러오기
+  // 수정해야 함.
+  useEffect(() => {
+    dispatch(reset());
+    setPage(1);
+    dispatch(fetchBookmarks(1));
+  }, [dispatch, selectedCategory]);
+
+  // 더보기 버튼
+  const handleMore = () => {
+    const next = page + 1;
+    setPage(next);
+    dispatch(fetchBookmarks(next));
+  };
 
   return (
     <main className="p-6 bg-gray-50 min-h-screen">
@@ -56,6 +50,17 @@ const Main = () => {
         {bookmarks.map((bookmark, idx) => (
           <BookmarkCard key={idx} {...bookmark} />
         ))}
+      </div>
+
+      {/* 더 보기 버튼 */}
+      <div className="mt-6 flex justify-center">
+        <button
+          onClick={handleMore}
+          disabled={loading}
+          className="px-4 py-2 rounded bg-violet-500 text-white hover:bg-violet-600 disabled:opacity-50"
+        >
+          {loading ? '불러오는 중...' : '더 보기'}
+        </button>
       </div>
     </main>
   );

@@ -8,7 +8,10 @@ const CategoryAddModal = () => {
   const dispatch = useAppDispatch();
 
   const onAdd = (text: string) => {
-    dispatch(createCategory({ name: text }));
+    if (text.length > 0) {
+      dispatch(createCategory({ name: text }));
+      dispatch(setcategoryAdd(false));
+    }
   };
 
   return (
@@ -36,10 +39,7 @@ const CategoryAddModal = () => {
         <button
           className="flex text-white items-center gap-1 px-3 py-1.5 text-sm bg-violet-600 hover:bg-violet-400 rounded"
           onClick={() => {
-            if (newCategoryName.length > 0) {
-              onAdd(newCategoryName);
-              dispatch(setcategoryAdd(false));
-            }
+            onAdd(newCategoryName);
           }}
         >
           추가

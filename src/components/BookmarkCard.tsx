@@ -1,24 +1,32 @@
 import { Heart, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
+import { useAppSelector } from '../Util/hook';
+import { selectCategories } from '../Util/categorySlice';
 
 interface BookmarkCardProps {
+  categoryId: number;
+  url: string;
   title: string;
   description: string;
   imageUrl: string;
-  tag: string;
-  isFavorite?: boolean;
-  url: string;
+  tagIds: number[];
+  isFavorite: boolean;
+  latitude: number;
+  longitude: number;
 }
 
 const BookmarkCard = ({
+  categoryId,
+  url,
   title,
   description,
   imageUrl,
-  tag,
-  isFavorite = false,
-  url,
+  // tagIds,
+  isFavorite,
 }: BookmarkCardProps) => {
   const [isLiked, setIsLiked] = useState(isFavorite);
+  const categories = useAppSelector(selectCategories);
+  const categoryName = categories.find((c) => c.id === categoryId)?.name;
 
   return (
     <div className="group bg-[#fafafa] border-2 border-[#E6E5F2] rounded-2xl shadow-sm overflow-hidden w-full max-w-[250px]">
@@ -42,7 +50,7 @@ const BookmarkCard = ({
           <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''} `} />
         </button>
         <span className="absolute bottom-3 left-3 text-primary bg-white/90 text-violet-700 text-xs px-2 py-0.5 rounded-full hover:bg-white">
-          {tag}
+          {categoryName}
         </span>
       </div>
       <div className="p-4 flex flex-col justify-between h-[150px]">
