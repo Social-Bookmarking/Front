@@ -27,6 +27,7 @@ import {
   ListboxOption,
   ListboxOptions,
 } from '@headlessui/react';
+import Avatar from './Avatar';
 
 type View = 'home' | 'map';
 interface SidebarProps {
@@ -48,6 +49,13 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
 
   return (
     <aside className="w-64 h-screen p-4 border-r-2 border-[#E6E5F2] bg-[#fafafa] flex flex-col">
+      <div className="flex border-b-2 border-[#E6E5F2] px-3 pb-3 items-center w-full mb-6">
+        <Avatar name={'김동천'} src={''} />
+        <div className="flex flex-col pl-3">
+          <p className="font-bold truncate">김동천</p>
+          <p className="text-sm truncate">dsky03@naver.com</p>
+        </div>
+      </div>
       {/* 북마크스페이스 타이틀 */}
       <div className="mb-6">
         <Listbox

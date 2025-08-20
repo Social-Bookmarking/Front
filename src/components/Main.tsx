@@ -18,6 +18,7 @@ const Main = () => {
   // 카테고리 변경 시 첫 페이지 다시 불러오기
   // 수정해야 함.
   useEffect(() => {
+    if (selectedCategory === null) return;
     dispatch(reset());
     setPage(1);
     dispatch(fetchBookmarks(1));
