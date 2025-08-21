@@ -5,6 +5,9 @@ import MockAdapter from 'axios-mock-adapter';
 export function setupMocks() {
   const mock = new MockAdapter(axios, { delayResponse: 300 });
 
+  // 인증 관련 API는 실제 서버로 흘려보내기
+  mock.onAny(/\/api\/auth\//).passThrough();
+
   // 카테고리 mock
   let data = [
     { id: 1, name: '전체', count: 28 },
