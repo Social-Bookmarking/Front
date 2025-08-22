@@ -57,7 +57,7 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
         </div>
       </div>
       {/* 북마크스페이스 타이틀 */}
-      <div className="mb-6">
+      <div>
         <Listbox
           value={selectedGroupId ?? undefined}
           onChange={(id) => dispatch(changeGroup(id))}

@@ -79,6 +79,20 @@ export function setupMocks() {
     return [200];
   });
 
+  const sampleTags = [
+    { tagId: 1, tagName: 'React' },
+    { tagId: 2, tagName: 'Design' },
+    { tagId: 3, tagName: 'Startup' },
+    { tagId: 4, tagName: 'JavaScript' },
+    { tagId: 5, tagName: 'TypeScript' },
+  ];
+
+  function getRandomTags() {
+    const count = Math.floor(Math.random() * sampleTags.length) + 1;
+    const shuffled = [...sampleTags].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+  }
+
   // 북마크 mock
   const allBookmarks = Array.from({ length: 40 }).map((_, i) => ({
     categoryId: (i % 5) + 1,
@@ -86,10 +100,10 @@ export function setupMocks() {
     title: `북마크 ${i + 1}`,
     description: `${i + 1}번째 북마크 설명`,
     imageUrl: `https://picsum.photos/seed/${i + 1}/400/240`,
-    tagIds: [i % 3, (i + 1) % 3],
+    tagIds: getRandomTags(),
     latitude: 37.5 + Math.random() * 0.1,
     longitude: 127.0 + Math.random() * 0.1,
-    isFavorite: Math.random() < 0.3, //30% 확률로 true
+    liked: Math.random() < 0.3, //30% 확률로 true
   }));
 
   mock.onGet('/api/bookmarks').reply((config) => {

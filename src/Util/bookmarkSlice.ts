@@ -2,16 +2,21 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+type tag = { tagId: number; tagName: string };
+
 export interface Bookmark {
-  categoryId: number;
+  bookmarkId: number;
   url: string;
   title: string;
   description: string;
   imageUrl: string;
-  tagIds: number[];
   latitude: number;
   longitude: number;
-  isFavorite: boolean;
+  createdAt: Date;
+  categoryId: number;
+  likesCount: number;
+  tagIds: tag[];
+  liked: boolean;
 }
 
 interface BookmarkState {
