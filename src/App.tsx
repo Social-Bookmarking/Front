@@ -1,11 +1,19 @@
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Sidebar from './Components/Sidebar';
 import Header from './Components/Header';
+
+// 모달
 import Modal from './Util/modal';
 import CategoryAddModal from './Modal/CategoryAddModal';
 import MemberSettingsModal from './Modal/MemberSettingsModal';
+import BookmarkAddModal from './Modal/BookmarkAddModal';
+
 import { useAppSelector, useAppDispatch } from './Util/hook';
-import { setcategoryAdd, setMemberManger } from './Util/modalSlice';
+import {
+  setcategoryAdd,
+  setMemberManger,
+  setBookMarkAdd,
+} from './Util/modalSlice';
 import { useState, lazy, Suspense, useCallback, useEffect } from 'react';
 import AuthPage from './AuthPage';
 
@@ -18,6 +26,7 @@ type View = 'home' | 'map';
 function App() {
   const isCategoryModal = useAppSelector((state) => state.modal.categoryAdd);
   const isMemberModal = useAppSelector((state) => state.modal.memberManager);
+  const isBookmarkAddModal = useAppSelector((state) => state.modal.bookmarkAdd);
   const dispatch = useAppDispatch();
 
   const [view, setView] = useState<View>('home');
@@ -58,6 +67,13 @@ function App() {
                     </main>
                   </div>
                 </div>
+                {/* 북마크 추가 모달 */}
+                <Modal
+                  isOpen={isBookmarkAddModal}
+                  onClose={() => dispatch(setBookMarkAdd(false))}
+                >
+                  <BookmarkAddModal />
+                </Modal>
 
                 {/* 카테고리 추가 모달 */}
                 <Modal

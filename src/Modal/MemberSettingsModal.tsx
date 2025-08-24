@@ -52,7 +52,7 @@ const MemberSettingsModal = () => {
   };
 
   return (
-    <div className="w-full max-w-3xl">
+    <div className="w-[50vw]">
       {/* 헤더 */}
       <div className="flex items-start justify-between mb-2">
         <div>

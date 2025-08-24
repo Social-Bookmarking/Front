@@ -34,7 +34,7 @@ const Modal: FC<ModalProps> = ({
             exit={{ opacity: 0, scale: 0.95 }}
           >
             <div
-              className="bg-white w-[50%] rounded-2xl shadow-md p-6 relative  font-GanwonEduAll_Light"
+              className="bg-white rounded-2xl shadow-md p-6 relative inline-block"
               onClick={(e) => e.stopPropagation()}
             >
               {!hideCloseButton && (

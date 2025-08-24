@@ -1,4 +1,4 @@
-import { Heart, ExternalLink } from 'lucide-react';
+import { Heart, ExternalLink, Trash2, MessageCircleMore } from 'lucide-react';
 import { useState } from 'react';
 import { useAppSelector } from '../Util/hook';
 import { selectCategories } from '../Util/categorySlice';
@@ -33,7 +33,7 @@ const BookmarkCard = ({
   const categoryName = categories.find((c) => c.id === categoryId)?.name;
 
   return (
-    <div className="group bg-[#fafafa] border-2 border-[#E6E5F2] rounded-2xl shadow-sm w-full max-w-[250px]">
+    <div className="group bg-[#fafafa] border-2 border-[#E6E5F2] rounded-2xl shadow-sm w-full min-w-[200px] max-w-[250px]">
       <div className="relative overflow-hidden rounded-t-2xl">
         <img
           src={imageUrl}
@@ -56,6 +56,8 @@ const BookmarkCard = ({
         <span className="absolute bottom-3 left-3 text-primary bg-white/90 text-violet-700 text-xs px-2 py-0.5 rounded-full hover:bg-white">
           {categoryName}
         </span>
+        <MessageCircleMore className="absolute text-white w-4 h-4 bottom-3 right-10 hover:text-violet-700" />
+        <Trash2 className="absolute text-white w-4 h-4 bottom-3 right-3 hover:text-violet-700" />
       </div>
       <div className="relative p-4 flex flex-col justify-between h-[150px]">
         <div>

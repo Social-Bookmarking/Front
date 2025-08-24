@@ -16,7 +16,6 @@ const AuthPage = () => {
           'http://www.marksphere.link:8080/api/auth/test',
           {}
         );
-        console.log(res.data.accessToken);
         localStorage.setItem('token', res.data.accessToken);
         window.dispatchEvent(new Event('storage'));
         navigate('/');

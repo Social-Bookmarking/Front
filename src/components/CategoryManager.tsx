@@ -18,19 +18,19 @@ const CategoryManager = () => {
   const selectedId = useAppSelector(selectSelectedId);
   const status = useAppSelector(selectCatStatus);
 
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [tempName, setTempName] = useState('');
 
   useEffect(() => {
     if (status === 'idle') dispatch(fetchCategories());
   }, [dispatch, status]);
 
-  const startEdit = (id: string, current: string) => {
+  const startEdit = (id: number, current: string) => {
     setEditingId(id);
     setTempName(current);
   };
   const cancel = () => setEditingId(null);
-  const commit = (id: string) => {
+  const commit = (id: number) => {
     const name = tempName.trim();
     if (!name) return;
     dispatch(renameCategory({ id, name }));
@@ -41,7 +41,7 @@ const CategoryManager = () => {
     dispatch(setcategoryAdd(true));
   };
 
-  const onDelete = (id: string) => {
+  const onDelete = (id: number) => {
     dispatch(deleteCategory({ id }));
   };
 

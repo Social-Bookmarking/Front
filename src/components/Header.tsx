@@ -1,6 +1,10 @@
 import { Share2, Settings, Plus } from 'lucide-react';
+import { useAppDispatch } from '../Util/hook';
+import { setBookMarkAdd } from '../Util/modalSlice';
 
 const Header = () => {
+  const dispatch = useAppDispatch();
+
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b-2 border-[#E6E5F2] bg-[#fafafa]">
       <div className="flex flex-col items-start gap-3">
@@ -21,7 +25,10 @@ const Header = () => {
           <Settings className="w-4 h-4" />
           <span className="hidden md:inline">설정</span>
         </button>
-        <button className="flex items-center font-medium text-white gap-1 px-3 py-1.5 text-sm bg-[#7C3BED] hover:bg-violet-700 rounded">
+        <button
+          className="flex items-center font-medium text-white gap-1 px-3 py-1.5 text-sm bg-[#7C3BED] hover:bg-violet-700 rounded"
+          onClick={() => dispatch(setBookMarkAdd(true))}
+        >
           <Plus className="w-4 h-4" />
           <span className="hidden md:inline">북마크 추가</span>
         </button>

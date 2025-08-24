@@ -15,7 +15,7 @@ const CategoryAddModal = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-[50vw]">
       <h1 className="text-xl text- font-bold">새 카테고리 추가</h1>
       <div>
         <input

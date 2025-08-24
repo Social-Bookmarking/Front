@@ -7,6 +7,7 @@ export function setupMocks() {
 
   // 인증 관련 API는 실제 서버로 흘려보내기
   mock.onAny(/\/api\/auth\//).passThrough();
+  mock.onAny(/\/api\/bookmarks\/og-info/).passThrough();
 
   // 카테고리 mock
   let data = [
