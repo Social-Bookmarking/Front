@@ -22,11 +22,13 @@ export interface Bookmark {
 interface BookmarkState {
   items: Bookmark[];
   loading: boolean;
+  page: number;
 }
 
 const initialState: BookmarkState = {
   items: [],
   loading: false,
+  page: 0,
 };
 
 // 나중에 수정해야 함.
@@ -44,9 +46,25 @@ const bookmarkSlice = createSlice({
   name: 'bookmarks',
   initialState,
   reducers: {
+    updateBookmarkLocation: (
+      state,
+      action: PayloadAction<{
+        bookmarkId: number;
+        latitude: number;
+        longitude: number;
+      }>
+    ) => {
+      const { bookmarkId, latitude, longitude } = action.payload;
+      const target = state.items.find((b) => b.bookmarkId === bookmarkId);
+      if (target) {
+        target.latitude = latitude;
+        target.longitude = longitude;
+      }
+    },
     reset(state) {
       state.items = [];
       state.loading = false;
+      state.page = 0;
     },
   },
   extraReducers: (builder) => {
@@ -54,19 +72,24 @@ const bookmarkSlice = createSlice({
       .addCase(fetchBookmarks.pending, (state) => {
         state.loading = true;
       })
-      .addCase(
-        fetchBookmarks.fulfilled,
-        (state, action: PayloadAction<Bookmark[]>) => {
-          // 새로 불러온 페이지는 이어 붙임
-          state.items = [...state.items, ...action.payload];
+      .addCase(fetchBookmarks.fulfilled, (state, action) => {
+        // 임시로 만든 코드
+        const fetchedPage = action.meta.arg;
+        // 이미 로드된 페이지는 다시 추가하지 않음
+        if (fetchedPage <= state.page) {
           state.loading = false;
+          return;
         }
-      )
+
+        state.items = [...state.items, ...action.payload];
+        state.page = fetchedPage;
+        state.loading = false;
+      })
       .addCase(fetchBookmarks.rejected, (state) => {
         state.loading = false;
       });
   },
 });
 
-export const { reset } = bookmarkSlice.actions;
+export const { reset, updateBookmarkLocation } = bookmarkSlice.actions;
 export default bookmarkSlice.reducer;

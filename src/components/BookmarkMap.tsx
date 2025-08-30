@@ -1,8 +1,15 @@
 import { CustomOverlayMap, Map, MapMarker } from 'react-kakao-maps-sdk';
+import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
-
-type latlng = { lat: number; lng: number };
-type Marker = { id: number; position: latlng };
+import { useAppSelector, useAppDispatch } from '../Util/hook';
+import { setBookMarkMapAdd } from '../Util/modalSlice';
+import SimpleBookmarkCard from './SimpleBookmarkCard';
+import {
+  addMarker,
+  removeMarker,
+  toggleOpen,
+  removeBookmarkFromMarker,
+} from '../Util/bookmarkMapSlice';
 
 interface Place {
   id: string;
@@ -15,9 +22,10 @@ interface Place {
 }
 
 const BookmarkMap = () => {
-  const [position, setPosition] = useState<Marker[]>([]);
-  const [counter, setCounter] = useState<number>(1);
-  const [openIds, setOpenIds] = useState<Set<number>>(new Set());
+  const dispatch = useAppDispatch();
+  const bookmarks = useAppSelector((state) => state.bookmark.items);
+  const markers = useAppSelector((state) => state.bookmarkMap.markers);
+  const openIds = useAppSelector((state) => state.bookmarkMap.openIds);
 
   // 검색 관련 상태
   const [map, setMap] = useState<kakao.maps.Map>();
@@ -30,15 +38,6 @@ const BookmarkMap = () => {
     kakao.maps.event.preventMap?.();
   };
 
-  const toggleOpen = (id: number) => {
-    setOpenIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
   const searchPlaces = () => {
     if (!map || !keyword.trim()) return;
 
@@ -46,7 +45,6 @@ const BookmarkMap = () => {
     ps.keywordSearch(keyword, (data, status) => {
       if (status === kakao.maps.services.Status.OK) {
         setPlaces(data as Place[]);
-        // 검색된 장소 범위로 지도 이동
         const bounds = new kakao.maps.LatLngBounds();
         for (let i = 0; i < data.length; i++) {
           bounds.extend(
@@ -84,44 +82,90 @@ const BookmarkMap = () => {
           onCreate={setMap}
           onClick={(_, MouseEvent) => {
             const latlng = MouseEvent.latLng;
-            setPosition((prev) => [
-              ...prev,
-              {
-                id: counter,
-                position: { lat: latlng.getLat(), lng: latlng.getLng() },
-              },
-            ]);
-            setCounter((n) => n + 1);
+            dispatch(
+              addMarker({
+                lat: latlng.getLat(),
+                lng: latlng.getLng(),
+              })
+            );
           }}
         >
-          {position.map((m) => (
-            <>
+          {/* 마커 모달 */}
+          {markers.map((m) => (
+            <div key={m.id}>
               <MapMarker
-                key={m.id}
                 position={m.position}
-                onClick={() => toggleOpen(m.id)}
+                onClick={() => dispatch(toggleOpen(m.id))}
               />
-              {openIds.has(m.id) && (
+              {openIds.includes(m.id) && (
                 <CustomOverlayMap position={m.position} yAnchor={1}>
                   <div
-                    className="flex flex-col rounded-lg shadow bg-white border p-3 text-sm min-w-40"
+                    className="flex flex-col rounded-lg shadow bg-white border p-3 text-sm min-w-60"
                     onMouseDown={stopOnMap}
                     onTouchStart={stopOnMap}
                     onClick={stopOnMap}
                   >
-                    <div className="font-semibold mb-1">마커 : {m.id}</div>
+                    {/* 마커에 등록된 북마크 리스트 */}
                     <div
-                      onClick={(e) => {
-                        stopOnMap(e);
-                        toggleOpen(m.id);
-                      }}
+                      className="space-y-2 max-h-75 overflow-y-auto"
+                      onWheel={(e) => e.stopPropagation()}
                     >
-                      닫기
+                      {m.bookmarks.map((bid) => {
+                        const b = bookmarks.find((b) => b.bookmarkId === bid);
+                        if (!b) return null;
+                        return (
+                          <div key={bid} className="relative">
+                            <SimpleBookmarkCard {...b} />
+                            <button
+                              className="absolute top-2 right-2 text-red-500"
+                              onClick={() =>
+                                dispatch(
+                                  removeBookmarkFromMarker({
+                                    markerId: m.id,
+                                    bookmarkId: bid,
+                                  })
+                                )
+                              }
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* 북마크 추가 버튼 */}
+                    <button
+                      className="mt-2 px-2 py-1 bg-violet-500 text-white rounded text-xs"
+                      onClick={() =>
+                        dispatch(
+                          setBookMarkMapAdd({
+                            open: true,
+                            marker: m,
+                          })
+                        )
+                      }
+                    >
+                      북마크 추가
+                    </button>
+                    <div className="flex w-full items-center justify-between mt-2 space-x-2 text-xs">
+                      <button
+                        className="bg-red-500 w-full text-white px-2 py-1 rounded"
+                        onClick={() => dispatch(removeMarker(m.id))}
+                      >
+                        마커 삭제
+                      </button>
+                      <button
+                        className="bg-gray-200 w-full px-2 py-1 rounded"
+                        onClick={() => dispatch(toggleOpen(m.id))}
+                      >
+                        닫기
+                      </button>
                     </div>
                   </div>
                 </CustomOverlayMap>
               )}
-            </>
+            </div>
           ))}
         </Map>
 

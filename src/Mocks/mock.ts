@@ -96,6 +96,7 @@ export function setupMocks() {
 
   // 북마크 mock
   const allBookmarks = Array.from({ length: 40 }).map((_, i) => ({
+    bookmarkId: i,
     categoryId: (i % 5) + 1,
     url: `https://example.com/${i + 1}`,
     title: `북마크 ${i + 1}`,

@@ -7,12 +7,14 @@ import Modal from './Util/modal';
 import CategoryAddModal from './Modal/CategoryAddModal';
 import MemberSettingsModal from './Modal/MemberSettingsModal';
 import BookmarkAddModal from './Modal/BookmarkAddModal';
+import BookmarkMapAddModal from './Modal/BookmarkMapAddModal';
 
 import { useAppSelector, useAppDispatch } from './Util/hook';
 import {
   setcategoryAdd,
   setMemberManger,
   setBookMarkAdd,
+  setBookMarkMapAdd,
 } from './Util/modalSlice';
 import { useState, lazy, Suspense, useCallback, useEffect } from 'react';
 import AuthPage from './AuthPage';
@@ -27,6 +29,9 @@ function App() {
   const isCategoryModal = useAppSelector((state) => state.modal.categoryAdd);
   const isMemberModal = useAppSelector((state) => state.modal.memberManager);
   const isBookmarkAddModal = useAppSelector((state) => state.modal.bookmarkAdd);
+  const isBookmarkMapAddModal = useAppSelector(
+    (state) => state.modal.bookmarkMapAdd
+  );
   const dispatch = useAppDispatch();
 
   const [view, setView] = useState<View>('home');
@@ -88,6 +93,14 @@ function App() {
                   onClose={() => dispatch(setMemberManger(false))}
                 >
                   <MemberSettingsModal />
+                </Modal>
+
+                {/* 맵 북마크 추가 모달 */}
+                <Modal
+                  isOpen={isBookmarkMapAddModal}
+                  onClose={() => dispatch(setBookMarkMapAdd({ open: false }))}
+                >
+                  <BookmarkMapAddModal />
                 </Modal>
 
                 {/* 설정 모달 */}

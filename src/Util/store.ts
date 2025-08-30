@@ -4,10 +4,12 @@ import modalReducer from './modalSlice';
 import membersReducer from './memberSlice';
 import bookmarkReducer from './bookmarkSlice';
 import groupReducer from './groupSlice';
+import bookmarkMapReducer from './bookmarkMapSlice';
 
 export const store = configureStore({
   reducer: {
     bookmark: bookmarkReducer,
+    bookmarkMap: bookmarkMapReducer,
     categories: categoriesReducer,
     modal: modalReducer,
     member: membersReducer,
