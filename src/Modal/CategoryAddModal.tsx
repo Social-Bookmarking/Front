@@ -15,7 +15,7 @@ const CategoryAddModal = () => {
   };
 
   return (
-    <div className="space-y-4 w-[50vw]">
+    <div className="space-y-4 w-[50vw] max-w-md">
       <h1 className="text-xl text- font-bold">새 카테고리 추가</h1>
       <div>
         <input
@@ -26,7 +26,7 @@ const CategoryAddModal = () => {
             if (e.key === 'Enter') onAdd(newCategoryName);
           }}
           placeholder="카테고리 이름"
-          className="w-full px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+          className="w-full px-4 py-2 border border-[#E6E5F2] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
         />
       </div>
       <div className="flex justify-end gap-2">

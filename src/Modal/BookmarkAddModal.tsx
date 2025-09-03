@@ -62,14 +62,14 @@ const BookmarkAddModal = () => {
   }, [url]);
 
   const handleFetchOgInfo = async () => {
-    if (!url || isValidUrl(url)) {
+    if (!url || !isValidUrl(url)) {
       alert('올바른 URL을 입력하세요!');
       return;
     }
     setLoading(true);
     try {
       const res = await axios.get(
-        'http://www.marksphere.link/api/bookmarks/og-info',
+        'https://www.marksphere.link/api/bookmarks/og-info',
         {
           params: { url },
           headers: {
@@ -86,7 +86,7 @@ const BookmarkAddModal = () => {
   };
 
   return (
-    <div className="w-[40vw]">
+    <div className="w-[50vw] max-w-md">
       <h2 className="text-lg font-semibold text-violet-600 mb-4">
         📌 북마크 추가
       </h2>

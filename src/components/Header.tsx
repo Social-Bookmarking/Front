@@ -1,6 +1,12 @@
 import { Share2, Settings, Plus } from 'lucide-react';
 import { useAppDispatch } from '../Util/hook';
-import { setBookMarkAdd } from '../Util/modalSlice';
+import { setBookMarkAdd, setGroupAdd } from '../Util/modalSlice';
+import {
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+} from '@headlessui/react';
 
 const Header = () => {
   const dispatch = useAppDispatch();
@@ -21,10 +27,30 @@ const Header = () => {
           <Share2 className="w-4 h-4" />
           <span className="hidden md:inline">초대</span>
         </button>
-        <button className="flex items-center gap-1 px-3 py-1.5 text-sm border-2 border-[#E6E5F2] hover:bg-gray-100 rounded">
-          <Settings className="w-4 h-4" />
-          <span className="hidden md:inline">설정</span>
-        </button>
+        <Listbox>
+          <div className="relative">
+            <ListboxButton className="flex items-center gap-1 px-3 py-1.5 text-sm border-2 border-[#E6E5F2] hover:bg-gray-100 rounded">
+              <Settings className="w-4 h-4" />
+              <span className="hidden md:inline">설정</span>
+            </ListboxButton>
+
+            <ListboxOptions className="absolute right-0 mt-1 w-25 rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none z-50 overflow-hidden">
+              <ListboxOption
+                value="add"
+                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+                onClick={() => dispatch(setGroupAdd(true))}
+              >
+                그룹 추가
+              </ListboxOption>
+              <ListboxOption
+                value="delete"
+                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+              >
+                그룹 삭제
+              </ListboxOption>
+            </ListboxOptions>
+          </div>
+        </Listbox>
         <button
           className="flex items-center font-medium text-white gap-1 px-3 py-1.5 text-sm bg-[#7C3BED] hover:bg-violet-700 rounded"
           onClick={() => dispatch(setBookMarkAdd(true))}

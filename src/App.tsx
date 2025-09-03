@@ -8,6 +8,7 @@ import CategoryAddModal from './Modal/CategoryAddModal';
 import MemberSettingsModal from './Modal/MemberSettingsModal';
 import BookmarkAddModal from './Modal/BookmarkAddModal';
 import BookmarkMapAddModal from './Modal/BookmarkMapAddModal';
+import GroupAddModal from './Modal/GroupAddModal';
 
 import { useAppSelector, useAppDispatch } from './Util/hook';
 import {
@@ -15,6 +16,7 @@ import {
   setMemberManger,
   setBookMarkAdd,
   setBookMarkMapAdd,
+  setGroupAdd,
 } from './Util/modalSlice';
 import { useState, lazy, Suspense, useCallback, useEffect } from 'react';
 import AuthPage from './AuthPage';
@@ -32,6 +34,7 @@ function App() {
   const isBookmarkMapAddModal = useAppSelector(
     (state) => state.modal.bookmarkMapAdd
   );
+  const isGroupAddModal = useAppSelector((state) => state.modal.groupAdd);
   const dispatch = useAppDispatch();
 
   const [view, setView] = useState<View>('home');
@@ -103,7 +106,13 @@ function App() {
                   <BookmarkMapAddModal />
                 </Modal>
 
-                {/* 설정 모달 */}
+                {/* 그룹추가 모달 */}
+                <Modal
+                  isOpen={isGroupAddModal}
+                  onClose={() => dispatch(setGroupAdd(false))}
+                >
+                  <GroupAddModal />
+                </Modal>
               </>
             ) : (
               <Navigate to="/login" replace />

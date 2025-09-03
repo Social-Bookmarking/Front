@@ -16,6 +16,7 @@ interface modalState {
   // 맵에 북마크 추가 모달
   bookmarkMapAdd: boolean;
   bookmarkMapContext: Marker | null;
+  groupAdd: boolean;
 }
 
 const initialState: modalState = {
@@ -24,6 +25,7 @@ const initialState: modalState = {
   memberManager: false,
   bookmarkMapAdd: false,
   bookmarkMapContext: null,
+  groupAdd: false,
 };
 
 const modalSlice = createSlice({
@@ -48,6 +50,9 @@ const modalSlice = createSlice({
         ? action.payload.marker ?? null
         : null;
     },
+    setGroupAdd: (state, action: PayloadAction<boolean>) => {
+      state.groupAdd = action.payload;
+    },
   },
 });
 
@@ -56,5 +61,6 @@ export const {
   setMemberManger,
   setBookMarkAdd,
   setBookMarkMapAdd,
+  setGroupAdd,
 } = modalSlice.actions;
 export default modalSlice.reducer;

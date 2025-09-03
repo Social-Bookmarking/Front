@@ -13,7 +13,7 @@ const AuthPage = () => {
     if (tab === 'login') {
       try {
         const res = await axios.post(
-          'http://www.marksphere.link:8080/api/auth/test',
+          'https://www.marksphere.link/api/auth/test',
           {}
         );
         localStorage.setItem('token', res.data.accessToken);
