@@ -1,6 +1,11 @@
 import { Share2, Settings, Plus } from 'lucide-react';
 import { useAppDispatch } from '../Util/hook';
-import { setBookMarkAdd, setGroupAdd } from '../Util/modalSlice';
+import {
+  setBookMarkAdd,
+  setGroupAdd,
+  setGroupModify,
+  setMyPage,
+} from '../Util/modalSlice';
 import {
   Listbox,
   ListboxButton,
@@ -34,7 +39,7 @@ const Header = () => {
               <span className="hidden md:inline">설정</span>
             </ListboxButton>
 
-            <ListboxOptions className="absolute right-0 mt-1 w-25 rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none z-50 overflow-hidden">
+            <ListboxOptions className="absolute right-0 mt-1 w-28 rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none z-50 overflow-hidden">
               <ListboxOption
                 value="add"
                 className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
@@ -43,10 +48,24 @@ const Header = () => {
                 그룹 추가
               </ListboxOption>
               <ListboxOption
+                value="modify"
+                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+                onClick={() => dispatch(setGroupModify(true))}
+              >
+                그룹 수정
+              </ListboxOption>
+              <ListboxOption
                 value="delete"
                 className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
               >
                 그룹 삭제
+              </ListboxOption>
+              <ListboxOption
+                value="MyPage"
+                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+                onClick={() => dispatch(setMyPage(true))}
+              >
+                마이페이지
               </ListboxOption>
             </ListboxOptions>
           </div>

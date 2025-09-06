@@ -6,8 +6,10 @@ export function setupMocks() {
   const mock = new MockAdapter(axios, { delayResponse: 300 });
 
   // 인증 관련 API는 실제 서버로 흘려보내기
-  mock.onAny(/\/api\/auth\//).passThrough();
-  mock.onAny(/\/api\/bookmarks\/og-info/).passThrough();
+  // mock.onAny(/\/api\/auth\//).passThrough();
+  // mock.onAny(/\/api\/bookmarks\/og-info/).passThrough();
+  // mock.onAny(/\/api\/me\/groups/).passThrough();
+  // mock.onAny(/\/api\/groups/).passThrough();
 
   // 카테고리 mock
   let data = [
@@ -116,6 +118,8 @@ export function setupMocks() {
     const slice = allBookmarks.slice(start, end);
     return [200, slice];
   });
+
+  mock.onAny().passThrough();
 
   return mock;
 }

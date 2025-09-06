@@ -15,8 +15,15 @@ import {
   selectSelectedId,
   selectCategory,
 } from '../Util/categorySlice';
-import { setcategoryAdd, setMemberManger } from '../Util/modalSlice';
 import {
+  setcategoryAdd,
+  setMemberManger,
+  setGroupAdd,
+  setGroupModify,
+  setMyPage,
+} from '../Util/modalSlice';
+import {
+  fetchGroups,
   selectGroups,
   selectSelectedGroup,
   changeGroup,
@@ -41,10 +48,11 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
   const selectedId = useAppSelector(selectSelectedId);
   const groups = useAppSelector(selectGroups);
   const selectedGroupId = useAppSelector(selectSelectedGroup);
-  const selectedGroup = groups.find((g) => g.id === selectedGroupId);
+  const selectedGroup = groups.find((g) => g.teamId === selectedGroupId);
 
   useEffect(() => {
     dispatch(fetchCategories());
+    dispatch(fetchGroups());
   }, [dispatch]);
 
   return (
@@ -59,29 +67,36 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
       {/* 북마크스페이스 타이틀 */}
       <div className="mb-2">
         <Listbox
-          value={selectedGroupId ?? undefined}
+          value={selectedGroupId ?? 0}
           onChange={(id) => dispatch(changeGroup(id))}
         >
           <div className="relative">
             <ListboxButton className="flex items-center justify-between w-full px-3 py-2 text-left focus:outline-none focus:ring-2 focus:ring-violet-300">
-              <span className="flex items-center gap-2 font-semibold text-gray-800">
+              <span className="flex items-center gap-2 font-semibold text-gray-800 ">
                 <FolderOpen className="w-5 h-5 text-violet-500" />
-                {selectedGroup?.name ?? '북마크 스페이스'}
+                <span
+                  className="block max-w-[160px] truncate"
+                  title={selectedGroup?.groupName ?? '북마크 스페이스'}
+                >
+                  {selectedGroup?.groupName ?? '북마크 스페이스'}
+                </span>
               </span>
               <ChevronDown className="w-4 h-4 text-gray-500" />
             </ListboxButton>
 
-            <ListboxOptions className="absolute z-50 mt-1 w-full rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none overflow-hidden">
+            <ListboxOptions className="absolute z-50 mt-1 w-full max-h-[280px] overflow-y-auto rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none overflow-hidden">
               {groups.map((g) => (
                 <ListboxOption
-                  key={g.id}
-                  value={g.id}
+                  key={g.teamId}
+                  value={g.teamId}
                   className="cursor-pointer select-none px-3 py-2 data-[focus]:bg-violet-50"
                 >
                   <div className="flex flex-col">
-                    <span className="font-medium text-gray-800">{g.name}</span>
+                    <span className="block max-w-[180px] break-words font-medium text-gray-800">
+                      {g.groupName}
+                    </span>
                     {g.description && (
-                      <span className="text-xs text-gray-500">
+                      <span className="block max-w-[180px] break-words text-xs text-gray-500">
                         {g.description}
                       </span>
                     )}
@@ -123,10 +138,44 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
           <Users className="w-4 h-4" />
           멤버 관리
         </button>
-        <button className="flex items-center gap-2 text-sm text-gray-700 hover:bg-violet-100 w-full px-3 py-2 rounded">
-          <Settings className="w-4 h-4" />
-          설정
-        </button>
+        <Listbox>
+          <div className="relative">
+            <ListboxButton className="flex items-center gap-2 text-sm text-gray-700 hover:bg-violet-100 w-full px-3 py-2 rounded">
+              <Settings className="w-4 h-4" />
+              <span>설정</span>
+            </ListboxButton>
+
+            <ListboxOptions className="absolute z-50 mt-1 w-full rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none overflow-hidden">
+              <ListboxOption
+                value="add"
+                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+                onClick={() => dispatch(setGroupAdd(true))}
+              >
+                그룹 추가
+              </ListboxOption>
+              <ListboxOption
+                value="modify"
+                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+                onClick={() => dispatch(setGroupModify(true))}
+              >
+                그룹 수정
+              </ListboxOption>
+              <ListboxOption
+                value="delete"
+                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+              >
+                그룹 삭제
+              </ListboxOption>
+              <ListboxOption
+                value="MyPage"
+                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+                onClick={() => dispatch(setMyPage(true))}
+              >
+                마이페이지
+              </ListboxOption>
+            </ListboxOptions>
+          </div>
+        </Listbox>
       </div>
 
       {/* 카테고리 헤더 */}

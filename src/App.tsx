@@ -9,6 +9,9 @@ import MemberSettingsModal from './Modal/MemberSettingsModal';
 import BookmarkAddModal from './Modal/BookmarkAddModal';
 import BookmarkMapAddModal from './Modal/BookmarkMapAddModal';
 import GroupAddModal from './Modal/GroupAddModal';
+import GroupModifyModal from './Modal/GroupModifyModal';
+import CommentModal from './Modal/CommentModal';
+import MyPage from './Modal/MyPage';
 
 import { useAppSelector, useAppDispatch } from './Util/hook';
 import {
@@ -17,6 +20,9 @@ import {
   setBookMarkAdd,
   setBookMarkMapAdd,
   setGroupAdd,
+  setGroupModify,
+  setCommentModal,
+  setMyPage,
 } from './Util/modalSlice';
 import { useState, lazy, Suspense, useCallback, useEffect } from 'react';
 import AuthPage from './AuthPage';
@@ -35,6 +41,10 @@ function App() {
     (state) => state.modal.bookmarkMapAdd
   );
   const isGroupAddModal = useAppSelector((state) => state.modal.groupAdd);
+  const isGroupModifyModal = useAppSelector((state) => state.modal.groupModify);
+  const isCommentModal = useAppSelector((state) => state.modal.commentModal);
+  const isMyPage = useAppSelector((state) => state.modal.myPage);
+
   const dispatch = useAppDispatch();
 
   const [view, setView] = useState<View>('home');
@@ -106,12 +116,36 @@ function App() {
                   <BookmarkMapAddModal />
                 </Modal>
 
-                {/* 그룹추가 모달 */}
+                {/* 그룹 추가 모달 */}
                 <Modal
                   isOpen={isGroupAddModal}
                   onClose={() => dispatch(setGroupAdd(false))}
                 >
                   <GroupAddModal />
+                </Modal>
+
+                {/* 그룹 수정 모달 */}
+                <Modal
+                  isOpen={isGroupModifyModal}
+                  onClose={() => dispatch(setGroupModify(false))}
+                >
+                  <GroupModifyModal />
+                </Modal>
+
+                {/* 댓글창 모달 */}
+                <Modal
+                  isOpen={isCommentModal}
+                  onClose={() => dispatch(setCommentModal({ open: false }))}
+                >
+                  <CommentModal />
+                </Modal>
+
+                {/* 마이페이지 */}
+                <Modal
+                  isOpen={isMyPage}
+                  onClose={() => dispatch(setMyPage(false))}
+                >
+                  <MyPage />
                 </Modal>
               </>
             ) : (

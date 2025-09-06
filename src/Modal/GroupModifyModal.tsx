@@ -1,19 +1,20 @@
 import { useState } from 'react';
-import { useAppDispatch } from '../Util/hook';
-import { setGroupAdd } from '../Util/modalSlice';
-import { fetchGroups } from '../Util/groupSlice';
+import { useAppSelector, useAppDispatch } from '../Util/hook';
+import { setGroupModify } from '../Util/modalSlice';
+import { selectSelectedGroup, fetchGroups } from '../Util/groupSlice';
 import axios from 'axios';
 
-const GroupAddModal = () => {
+const GroupModifyModal = () => {
   const [groupName, setGroupName] = useState('');
   const [description, setDescription] = useState('');
   const dispatch = useAppDispatch();
+  const groupId = useAppSelector(selectSelectedGroup);
 
-  const handleSave = async () => {
+  const handleModify = async () => {
     if (!groupName.trim()) return alert('그룹명을 입력해주세요.');
     try {
-      const res = await axios.post(
-        `https://www.marksphere.link/api/groups`,
+      const res = await axios.patch(
+        `https://www.marksphere.link/api/groups/${groupId}`,
         {
           name: groupName,
           description: description,
@@ -29,7 +30,7 @@ const GroupAddModal = () => {
     } catch (err) {
       console.log(err);
     }
-    dispatch(setGroupAdd(false));
+    dispatch(setGroupModify(false));
   };
 
   return (
@@ -69,20 +70,20 @@ const GroupAddModal = () => {
 
       <div className="flex justify-end gap-2 pt-4">
         <button
-          onClick={() => dispatch(setGroupAdd(false))}
+          onClick={() => dispatch(setGroupModify(false))}
           className="px-4 py-2 rounded-md text-sm border border-[#E6E5F2] text-gray-600 hover:bg-gray-100"
         >
           취소
         </button>
         <button
-          onClick={handleSave}
+          onClick={handleModify}
           className="px-4 py-2 rounded-md text-sm font-medium text-white bg-[#7C3BED] hover:bg-violet-700"
         >
-          저장
+          수정
         </button>
       </div>
     </div>
   );
 };
 
-export default GroupAddModal;
+export default GroupModifyModal;

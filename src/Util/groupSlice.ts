@@ -1,12 +1,13 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
 import type { AppDispatch } from './store';
 import { fetchCategories } from './categorySlice';
 import { fetchMembers } from './memberSlice';
+import axios from 'axios';
 
-// id 없을 수도..
 export interface Group {
-  id: number;
-  name: string;
+  teamId: number;
+  groupName: string;
   description: string;
 }
 
@@ -16,13 +17,24 @@ interface GroupState {
 }
 
 const initialState: GroupState = {
-  groups: [
-    { id: 1, name: '디자인팀', description: '디자인 관련 북마크 스페이스' },
-    { id: 2, name: '개발팀', description: '개발자 전용 스페이스' },
-    { id: 3, name: '마케팅팀', description: '마케팅 자료 모음' },
-  ],
-  selectedGroupId: 1,
+  groups: [],
+  selectedGroupId: null,
 };
+
+export const fetchGroups = createAsyncThunk<Group[]>(
+  'groups/fetch',
+  async () => {
+    const { data } = await axios.get<Group[]>(
+      `https://www.marksphere.link/api/me/groups`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    );
+    return data;
+  }
+);
 
 const groupSlice = createSlice({
   name: 'groups',
@@ -31,6 +43,14 @@ const groupSlice = createSlice({
     selectGroup(state, action: PayloadAction<number>) {
       state.selectedGroupId = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchGroups.fulfilled, (state, action) => {
+      state.groups = action.payload;
+      if (action.payload.length > 0) {
+        state.selectedGroupId = action.payload[0].teamId;
+      }
+    });
   },
 });
 

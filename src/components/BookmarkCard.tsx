@@ -1,25 +1,30 @@
 import { Heart, ExternalLink, Trash2, MessageCircleMore } from 'lucide-react';
 import { useState } from 'react';
-import { useAppSelector } from '../Util/hook';
+import { useAppDispatch, useAppSelector } from '../Util/hook';
 import { selectCategories } from '../Util/categorySlice';
+import { setCommentModal } from '../Util/modalSlice';
 
 const MAX_VISIBLE = 3;
 
 type tag = { tagId: number; tagName: string };
 
 interface BookmarkCardProps {
-  categoryId: number;
+  bookmarkId: number;
   url: string;
   title: string;
   description: string;
   imageUrl: string;
-  tagIds: tag[];
-  liked: boolean;
   latitude: number;
   longitude: number;
+  createdAt: Date;
+  categoryId: number;
+  likesCount: number;
+  tagIds: tag[];
+  liked: boolean;
 }
 
 const BookmarkCard = ({
+  bookmarkId,
   categoryId,
   url,
   title,
@@ -28,6 +33,7 @@ const BookmarkCard = ({
   tagIds,
   liked,
 }: BookmarkCardProps) => {
+  const dispatch = useAppDispatch();
   const [isLiked, setIsLiked] = useState(liked);
   const categories = useAppSelector(selectCategories);
   const categoryName = categories.find((c) => c.id === categoryId)?.name;
@@ -56,7 +62,12 @@ const BookmarkCard = ({
         <span className="absolute bottom-3 left-3 text-primary bg-white/90 text-violet-700 text-xs px-2 py-0.5 rounded-full hover:bg-white">
           {categoryName}
         </span>
-        <MessageCircleMore className="absolute text-white w-4 h-4 bottom-3 right-10 hover:text-violet-700" />
+        <MessageCircleMore
+          className="absolute text-white w-4 h-4 bottom-3 right-10 hover:text-violet-700"
+          onClick={() =>
+            dispatch(setCommentModal({ open: true, bookmarkId: bookmarkId }))
+          }
+        />
         <Trash2 className="absolute text-white w-4 h-4 bottom-3 right-3 hover:text-violet-700" />
       </div>
       <div className="relative p-4 flex flex-col justify-between h-[150px]">

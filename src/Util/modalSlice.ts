@@ -17,6 +17,10 @@ interface modalState {
   bookmarkMapAdd: boolean;
   bookmarkMapContext: Marker | null;
   groupAdd: boolean;
+  groupModify: boolean;
+  commentModal: boolean;
+  commentModalbookmarkId: number | null;
+  myPage: boolean;
 }
 
 const initialState: modalState = {
@@ -26,6 +30,10 @@ const initialState: modalState = {
   bookmarkMapAdd: false,
   bookmarkMapContext: null,
   groupAdd: false,
+  groupModify: false,
+  commentModal: false,
+  commentModalbookmarkId: null,
+  myPage: false,
 };
 
 const modalSlice = createSlice({
@@ -53,6 +61,21 @@ const modalSlice = createSlice({
     setGroupAdd: (state, action: PayloadAction<boolean>) => {
       state.groupAdd = action.payload;
     },
+    setGroupModify: (state, action: PayloadAction<boolean>) => {
+      state.groupModify = action.payload;
+    },
+    setCommentModal: (
+      state,
+      action: PayloadAction<{ open: boolean; bookmarkId?: number }>
+    ) => {
+      state.commentModal = action.payload.open;
+      state.commentModalbookmarkId = action.payload.open
+        ? action.payload.bookmarkId ?? null
+        : null;
+    },
+    setMyPage: (state, action: PayloadAction<boolean>) => {
+      state.myPage = action.payload;
+    },
   },
 });
 
@@ -62,5 +85,8 @@ export const {
   setBookMarkAdd,
   setBookMarkMapAdd,
   setGroupAdd,
+  setGroupModify,
+  setCommentModal,
+  setMyPage,
 } = modalSlice.actions;
 export default modalSlice.reducer;
