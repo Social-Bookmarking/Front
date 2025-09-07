@@ -32,7 +32,7 @@ const Main = () => {
   };
 
   return (
-    <main className="p-6 bg-gray-50 min-h-screen">
+    <main className="p-6 bg-gray-50">
       {/* 검색 바 */}
       <div className="mb-6">
         <input

@@ -56,7 +56,7 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
   }, [dispatch]);
 
   return (
-    <aside className="w-64 h-screen p-4 border-r-2 border-[#E6E5F2] bg-[#fafafa] flex flex-col">
+    <aside className="w-64 h-full p-4 border-r-2 border-[#E6E5F2] bg-[#fafafa] flex flex-col">
       <div className="flex border-b-2 border-[#E6E5F2] px-3 pb-3 items-center w-full mb-6">
         <Avatar name={'김동천'} src={''} />
         <div className="flex flex-col pl-3">

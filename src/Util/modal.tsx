@@ -20,7 +20,7 @@ const Modal: FC<ModalProps> = ({
         <>
           {/* 모달 뒷배경 */}
           <motion.div
-            className={`absolute inset-0 z-40 bg-black/80`}
+            className={`fixed inset-0 z-40 bg-black/80`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -28,7 +28,7 @@ const Modal: FC<ModalProps> = ({
 
           {/* 모달 박스 */}
           <motion.div
-            className={`absolute z-50 inset-0 flex items-center justify-center `}
+            className={`fixed z-50 inset-0 flex items-center justify-center `}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}

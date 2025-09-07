@@ -12,7 +12,7 @@ const GroupAddModal = () => {
   const handleSave = async () => {
     if (!groupName.trim()) return alert('그룹명을 입력해주세요.');
     try {
-      const res = await axios.post(
+      await axios.post(
         `https://www.marksphere.link/api/groups`,
         {
           name: groupName,
@@ -24,7 +24,6 @@ const GroupAddModal = () => {
           },
         }
       );
-      console.log(res);
       await dispatch(fetchGroups());
     } catch (err) {
       console.log(err);

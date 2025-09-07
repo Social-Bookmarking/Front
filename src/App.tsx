@@ -70,7 +70,7 @@ function App() {
           element={
             token ? (
               <>
-                <div className="flex h-screen">
+                <div className="flex">
                   <div className="sticky">
                     <Sidebar view={view} onNavigate={handleNavigate} />
                   </div>
