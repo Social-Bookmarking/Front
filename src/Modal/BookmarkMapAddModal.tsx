@@ -75,11 +75,7 @@ const BookmarkMapAddModal = () => {
         {bookmarks
           .filter((b) => b.title.toLowerCase().includes(search.toLowerCase()))
           .map((b) => (
-            <div
-              key={b.bookmarkId}
-              className="cursor-pointerrounded hover:bg-gray-100"
-              onClick={() => handleSelect(b.bookmarkId)}
-            >
+            <div key={b.bookmarkId} onClick={() => handleSelect(b.bookmarkId)}>
               <SimpleBookmarkCard {...b} />
             </div>
           ))}
