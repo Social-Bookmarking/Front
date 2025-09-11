@@ -21,6 +21,7 @@ interface modalState {
   commentModal: boolean;
   commentModalbookmarkId: number | null;
   myPage: boolean;
+  QRCodeModal: boolean;
 }
 
 const initialState: modalState = {
@@ -34,6 +35,7 @@ const initialState: modalState = {
   commentModal: false,
   commentModalbookmarkId: null,
   myPage: false,
+  QRCodeModal: false,
 };
 
 const modalSlice = createSlice({
@@ -76,6 +78,9 @@ const modalSlice = createSlice({
     setMyPage: (state, action: PayloadAction<boolean>) => {
       state.myPage = action.payload;
     },
+    setQRcodeModal: (state, action: PayloadAction<boolean>) => {
+      state.QRCodeModal = action.payload;
+    },
   },
 });
 
@@ -88,5 +93,6 @@ export const {
   setGroupModify,
   setCommentModal,
   setMyPage,
+  setQRcodeModal,
 } = modalSlice.actions;
 export default modalSlice.reducer;

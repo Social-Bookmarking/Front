@@ -2,13 +2,15 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+type Role = 'ADMIN' | 'EDITOR' | 'VIEWER';
+
 // 나중에 수정
 interface Member {
-  id: string;
+  userid: string;
   name: string;
   email: string;
-  profile: string;
-  role: string;
+  profileImageUrl: string;
+  permission: Role;
 }
 
 interface MemberState {
@@ -21,10 +23,18 @@ const initialState: MemberState = {
   status: 'idle',
 };
 
-export const fetchMembers = createAsyncThunk<Member[]>(
+export const fetchMembers = createAsyncThunk<Member[], number>(
   'member/fetchMembers',
-  async () => {
-    const res = await axios.get<Member[]>('/api/members');
+  async (groupId) => {
+    const res = await axios.get<Member[]>(
+      `https://www.marksphere.link/api/groups/${groupId}/members`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    );
+    console.log(res.data);
     return res.data;
   }
 );
@@ -38,17 +48,14 @@ const memberSlice = createSlice({
     },
     removeMember: (state, action: PayloadAction<string>) => {
       state.memberList = state.memberList.filter(
-        (m) => m.id !== action.payload
+        (m) => m.userid !== action.payload
       );
     },
-    changeRole: (
-      state,
-      action: PayloadAction<{ id: string; role: string }>
-    ) => {
+    changeRole: (state, action: PayloadAction<{ id: string; role: Role }>) => {
       const { id, role } = action.payload;
-      const target = state.memberList.find((m) => m.id === id);
+      const target = state.memberList.find((m) => m.userid === id);
       if (target) {
-        target.role = role;
+        target.permission = role;
       }
     },
   },

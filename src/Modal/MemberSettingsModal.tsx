@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { MailPlus, Trash2, ChevronDown } from 'lucide-react';
+import { Copy, RefreshCw, Trash2, ChevronDown, QrCode } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAppSelector, useAppDispatch } from '../Util/hook';
-import { setMemberManger } from '../Util/modalSlice';
+import { setMemberManger, setQRcodeModal } from '../Util/modalSlice';
 import { fetchMembers, changeRole } from '../Util/memberSlice';
 import Avatar from '../Components/Avatar';
 import {
@@ -10,45 +11,71 @@ import {
   ListboxOption,
   ListboxOptions,
 } from '@headlessui/react';
+import { selectSelectedGroup } from '../Util/groupSlice';
+import axios from 'axios';
 
-type Role = 'owner' | 'admin' | 'editor' | 'viewer';
+import { useFloating, flip, shift, offset } from '@floating-ui/react';
+
+type Role = 'ADMIN' | 'EDITOR' | 'VIEWER';
 
 const ROLE_LABEL: Record<Role, string> = {
-  owner: '소유자',
-  admin: '관리자',
-  editor: '편집자',
-  viewer: '뷰어',
+  ADMIN: '관리자',
+  EDITOR: '편집자',
+  VIEWER: '뷰어',
 };
 
 const MemberSettingsModal = () => {
   const dispatch = useAppDispatch();
   const members = useAppSelector((state) => state.member.memberList);
   const status = useAppSelector((state) => state.member.status);
+  const groupId = useAppSelector(selectSelectedGroup);
+
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const { refs, floatingStyles } = useFloating({
+    placement: 'bottom-start',
+    middleware: [flip(), shift(), offset(4)],
+  });
 
   useEffect(() => {
-    if (status === 'idle') dispatch(fetchMembers());
-  }, [dispatch, status]);
+    if (status === 'idle' && groupId) dispatch(fetchMembers(groupId));
+  }, [dispatch, status, groupId]);
 
-  // 초대 상태
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<Role>('viewer');
-
-  // TODO: inviteMember thunk와 연결
-  const handleInvite = () => {
-    console.log('invite', inviteEmail, inviteRole);
-    // dispatch(inviteMember({ email: inviteEmail, role: inviteRole }))
-    //   .unwrap()
-    //   .then(() => setInviteEmail(''));
+  const handleGenerateCode = async () => {
+    if (!groupId) return;
+    try {
+      setLoading(true);
+      const res = await axios.post(
+        `https://www.marksphere.link/api/groups/${groupId}/invite-code`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      setInviteCode(res.data.code);
+    } catch (err) {
+      console.error('초대 코드 생성 실패', err);
+      toast.error('오류 발생');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // TODO: updateMemberRole / removeMember thunk와 연결
-  const handleChangeRole = (id: string, role: string) => {
-    console.log('change-role', id, role);
+  const handleCopy = () => {
+    if (!inviteCode) return;
+    navigator.clipboard.writeText(inviteCode);
+    toast.success('초대 코드가 복사되었습니다.');
+  };
+
+  const handleChangeRole = (id: string, role: Role) => {
     dispatch(changeRole({ id, role }));
   };
+
   const handleRemove = (id: string) => {
     console.log('remove', id);
-    // dispatch(removeMemberAsync({ id }));
   };
 
   return (
@@ -66,75 +93,90 @@ const MemberSettingsModal = () => {
       </div>
 
       {/* 초대 영역 */}
-      <div className="mt-4 grid items-center gap-3 md:flex md:itmes-center">
-        <input
-          type="email"
-          value={inviteEmail}
-          onChange={(e) => setInviteEmail(e.target.value)}
-          placeholder="이메일 주소"
-          className="flex-1 h-11 px-4 rounded-lg border border-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300 bg-white"
-        />
-        <div className="relative min-w-25">
-          <Listbox value={inviteRole} onChange={setInviteRole}>
-            <ListboxButton className="flex justify-between items-center w-full h-11 rounded-lg border border-violet-300 bg-white px-3 text-left focus:outline-none focus:ring-2 focus:ring-violet-300">
-              <span className="truncate">{ROLE_LABEL[inviteRole]}</span>
-              <ChevronDown className="w-4 h-4 text-gray-500" />
-            </ListboxButton>
-            <ListboxOptions className="absolute z-50 mt-1 w-full rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none overflow-hidden">
-              {(Object.keys(ROLE_LABEL) as Role[]).map((role) => (
-                <ListboxOption
-                  key={role}
-                  value={role}
-                  className="cursor-pointer select-none px-3 py-2 data-[focus]:bg-violet-50"
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="border-2 border-[#E6E5F2] rounded-lg p-4 flex flex-col items-center gap-3">
+          <h3 className="font-medium text-gray-800">초대 코드</h3>
+          {inviteCode ? (
+            <>
+              <p className="text-lg font-mono text-violet-600">{inviteCode}</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCopy}
+                  className="px-3 py-1 rounded-md bg-violet-600 text-white text-xs hover:bg-violet-700 flex items-center gap-1"
                 >
-                  {ROLE_LABEL[role]}
-                </ListboxOption>
-              ))}
-            </ListboxOptions>
-          </Listbox>
+                  <Copy className="w-3 h-3" /> 복사
+                </button>
+                <button
+                  onClick={handleGenerateCode}
+                  disabled={loading}
+                  className="px-3 py-1 rounded-md border border-[#E6E5F2] text-xs hover:bg-gray-100 flex items-center gap-1"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  {loading ? '발급 중...' : '재발급'}
+                </button>
+              </div>
+            </>
+          ) : (
+            <button
+              onClick={handleGenerateCode}
+              disabled={loading}
+              className="px-4 py-2 rounded-md bg-violet-600 text-white hover:bg-violet-700 text-sm"
+            >
+              {loading ? '발급 중...' : '코드 생성'}
+            </button>
+          )}
         </div>
 
-        <button
-          onClick={handleInvite}
-          className="h-11 px-4 rounded-lg bg-violet-600 hover:bg-violet-700 text-white inline-flex items-center gap-2"
-        >
-          <MailPlus className="w-4 h-4" />
-          초대
-        </button>
+        <div className="border-2 border-[#E6E5F2] rounded-lg p-4 flex flex-col items-center justify-center gap-">
+          <h3 className="font-medium text-gray-800">QR 코드 초대</h3>
+          <button
+            onClick={() => dispatch(setQRcodeModal(true))}
+            className="px-4 py-2 rounded-md border border-[#E6E5F2] text-sm hover:bg-gray-100 flex items-center gap-2"
+          >
+            <QrCode className="w-4 h-4" />
+            QR 보기
+          </button>
+        </div>
       </div>
 
       {/* 현재 멤버 리스트 */}
-      <div className="mt-6 space-y-3 max-h-60 overflow-y-auto">
+      <div className="mt-6 space-y-3 h-60 overflow-y-auto scrollbar-hidden">
         {members.map((m) => (
           <div
-            key={m.id}
+            key={m.userid}
             className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between rounded-xl border border-violet-100 bg-white px-4 py-3"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <Avatar name={m.name} src={m.profile} />
+              <Avatar name={m.name} src={m.profileImageUrl} />
               <div className="min-w-0">
                 <div className="font-medium text-gray-900 truncate">
                   {m.name}
                 </div>
-                <div className="text-sm text-gray-500 truncate">{m.email}</div>
+                <div className="text-sm text-gray-500 truncate">
+                  {m.email ? m.email : '이메일 없음'}
+                </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2 sm:justify-between">
               <div className="relative min-w-30">
                 <Listbox
-                  value={m.role}
-                  onChange={(role: Role) =>
-                    handleChangeRole(m.id, ROLE_LABEL[role])
-                  }
+                  value={m.permission}
+                  onChange={(role: Role) => handleChangeRole(m.userid, role)}
                 >
-                  <ListboxButton className="w-full flex justify-between items-center h-10 rounded-lg border border-violet-300 bg-white px-3 text-left focus:outline-none focus:ring-2 focus:ring-violet-300">
-                    <span className="truncate">{m.role}</span>
+                  <ListboxButton
+                    ref={refs.setReference}
+                    className="w-full flex justify-between items-center h-10 rounded-lg border border-violet-300 bg-white px-3 text-left focus:outline-none focus:ring-2 focus:ring-violet-300"
+                  >
+                    <span className="truncate">{ROLE_LABEL[m.permission]}</span>
                     <ChevronDown className="w-4 h-4 text-gray-500" />
                   </ListboxButton>
 
-                  {/* anchor 제거, absolute로 고정 */}
-                  <ListboxOptions className="absolute z-50 mt-1 w-full rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none max-h-20 overflow-auto">
+                  <ListboxOptions
+                    ref={refs.setFloating}
+                    style={floatingStyles}
+                    className="z-50 w-full rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none max-h-20 overflow-auto"
+                  >
                     {(Object.keys(ROLE_LABEL) as Role[]).map((role) => (
                       <ListboxOption
                         key={role}
@@ -149,7 +191,7 @@ const MemberSettingsModal = () => {
               </div>
 
               <button
-                onClick={() => handleRemove(m.id)}
+                onClick={() => handleRemove(m.userid)}
                 className="p-2 rounded-lg hover:bg-rose-50"
                 aria-label="멤버 삭제"
               >

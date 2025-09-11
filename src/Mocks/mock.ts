@@ -44,43 +44,43 @@ export function setupMocks() {
   });
 
   //  멤버 mock
-  let members = [
-    {
-      id: '1',
-      name: '홍길동',
-      email: 'Hong@example.com',
-      profile: '',
-      role: '관리자',
-    },
-    {
-      id: '2',
-      name: '김철수',
-      email: 'Kim@example.com',
-      profile: '',
-      role: '뷰어',
-    },
-    {
-      id: '3',
-      name: '이영희',
-      email: 'Lee@example.com',
-      profile: '',
-      role: '편집자',
-    },
-  ];
+  // let members = [
+  //   {
+  //     id: '1',
+  //     name: '홍길동',
+  //     email: 'Hong@example.com',
+  //     profile: '',
+  //     role: '관리자',
+  //   },
+  //   {
+  //     id: '2',
+  //     name: '김철수',
+  //     email: 'Kim@example.com',
+  //     profile: '',
+  //     role: '뷰어',
+  //   },
+  //   {
+  //     id: '3',
+  //     name: '이영희',
+  //     email: 'Lee@example.com',
+  //     profile: '',
+  //     role: '편집자',
+  //   },
+  // ];
 
-  mock.onGet('/api/members').reply(200, members);
+  // mock.onGet('/api/members').reply(200, members);
 
-  mock.onPost('/api/members').reply((config) => {
-    const { id, name, email, profile, role } = JSON.parse(config.data);
-    members.push({ id, name, email, profile, role });
-    return [200, { id, name, email, profile, role }];
-  });
+  // mock.onPost('/api/members').reply((config) => {
+  //   const { id, name, email, profile, role } = JSON.parse(config.data);
+  //   members.push({ id, name, email, profile, role });
+  //   return [200, { id, name, email, profile, role }];
+  // });
 
-  mock.onDelete(/\/api\/members\/\w+/).reply((config) => {
-    const id = config.url!.split('/').pop();
-    members = members.filter((m) => m.id !== id);
-    return [200];
-  });
+  // mock.onDelete(/\/api\/members\/\w+/).reply((config) => {
+  //   const id = config.url!.split('/').pop();
+  //   members = members.filter((m) => m.id !== id);
+  //   return [200];
+  // });
 
   const sampleTags = [
     { tagId: 1, tagName: 'React' },

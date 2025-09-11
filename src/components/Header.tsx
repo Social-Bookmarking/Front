@@ -5,6 +5,7 @@ import {
   setGroupAdd,
   setGroupModify,
   setMyPage,
+  setMemberManger,
 } from '../Util/modalSlice';
 import {
   Listbox,
@@ -28,7 +29,10 @@ const Header = () => {
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <button className="flex items-center gap-1 px-3 py-1.5 text-sm border-2 border-[#E6E5F2] hover:bg-gray-100 rounded">
+        <button
+          className="flex items-center gap-1 px-3 py-1.5 text-sm border-2 border-[#E6E5F2] hover:bg-gray-100 rounded"
+          onClick={() => dispatch(setMemberManger(true))}
+        >
           <Share2 className="w-4 h-4" />
           <span className="hidden md:inline">초대</span>
         </button>

@@ -220,25 +220,34 @@ const MyPage = () => {
       {/* 내가 등록한 북마크 보기 */}
       {tab === 'myBookmark' && (
         <>
-          <div
-            className="flex overflow-x-auto overscroll-contain space-x-2"
-            onWheel={(e) => {
-              e.currentTarget.scrollLeft += e.deltaY;
-            }}
-          >
-            {bookmarks.map((b) => (
-              <div key={b.bookmarkId}>
-                <SimpleBookmarkCard {...b} />
+          {bookmarks.length === 0 ? (
+            <div className="flex flex-col items-center justify-center w-full h-40 text-gray-400 border-2 border-dashed border-[#E6E5F2] rounded-lg">
+              <Bookmark className="w-8 h-8 mb-2" />
+              <p className="text-sm">등록된 북마크가 없습니다</p>
+            </div>
+          ) : (
+            <>
+              <div
+                className="flex overflow-x-auto overscroll-contain space-x-2"
+                onWheel={(e) => {
+                  e.currentTarget.scrollLeft += e.deltaY;
+                }}
+              >
+                {bookmarks.map((b) => (
+                  <div key={b.bookmarkId}>
+                    <SimpleBookmarkCard {...b} />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <button
-            className="mt-2 px-3 py-1 bg-violet-500 text-white rounded"
-            onClick={handleMore}
-            disabled={loading}
-          >
-            {loading ? '불러오는 중...' : '더 보기'}
-          </button>
+              <button
+                className="mt-2 px-3 py-1 bg-violet-500 text-white rounded"
+                onClick={handleMore}
+                disabled={loading}
+              >
+                {loading ? '불러오는 중...' : '더 보기'}
+              </button>
+            </>
+          )}
         </>
       )}
     </div>

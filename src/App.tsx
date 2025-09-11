@@ -12,6 +12,7 @@ import GroupAddModal from './Modal/GroupAddModal';
 import GroupModifyModal from './Modal/GroupModifyModal';
 import CommentModal from './Modal/CommentModal';
 import MyPage from './Modal/MyPage';
+import QRCodeModal from './Modal/QRCodeModal';
 
 import { useAppSelector, useAppDispatch } from './Util/hook';
 import {
@@ -23,6 +24,7 @@ import {
   setGroupModify,
   setCommentModal,
   setMyPage,
+  setQRcodeModal,
 } from './Util/modalSlice';
 import { useState, lazy, Suspense, useCallback, useEffect } from 'react';
 import AuthPage from './AuthPage';
@@ -44,6 +46,7 @@ function App() {
   const isGroupModifyModal = useAppSelector((state) => state.modal.groupModify);
   const isCommentModal = useAppSelector((state) => state.modal.commentModal);
   const isMyPage = useAppSelector((state) => state.modal.myPage);
+  const isQRCodeModal = useAppSelector((state) => state.modal.QRCodeModal);
 
   const dispatch = useAppDispatch();
 
@@ -146,6 +149,14 @@ function App() {
                   onClose={() => dispatch(setMyPage(false))}
                 >
                   <MyPage />
+                </Modal>
+
+                {/* QR 초대 모달 */}
+                <Modal
+                  isOpen={isQRCodeModal}
+                  onClose={() => dispatch(setQRcodeModal(false))}
+                >
+                  <QRCodeModal />
                 </Modal>
               </>
             ) : (
