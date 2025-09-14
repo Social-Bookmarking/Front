@@ -1,5 +1,15 @@
-import { Share2, Settings, Plus } from 'lucide-react';
-import { useAppDispatch } from '../Util/hook';
+import {
+  Share2,
+  Settings,
+  Plus,
+  LogIn,
+  PlusCircle,
+  Pencil,
+  Trash2,
+  LogOut,
+  User,
+} from 'lucide-react';
+import { useAppDispatch, useAppSelector } from '../Util/hook';
 import {
   setBookMarkAdd,
   setGroupAdd,
@@ -16,6 +26,8 @@ import {
 
 const Header = () => {
   const dispatch = useAppDispatch();
+  const members = useAppSelector((state) => state.member.memberList);
+  const membersNumber = members.length;
 
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b-2 border-[#E6E5F2] bg-[#fafafa]">
@@ -25,7 +37,7 @@ const Header = () => {
           내 북마크 워크스페이스
         </h1>
         <div className="px-2 py-0.5 text-xs bg-[#E6E5F2] rounded-full">
-          멤버 3명
+          {`멤버 ${membersNumber}명`}
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -43,32 +55,51 @@ const Header = () => {
               <span className="hidden md:inline">설정</span>
             </ListboxButton>
 
-            <ListboxOptions className="absolute right-0 mt-1 w-28 rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none z-50 overflow-hidden">
+            <ListboxOptions className="absolute right-0 mt-1 w-30 rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none z-50 overflow-hidden">
               <ListboxOption
-                value="add"
-                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+                value="participation"
+                className="cursor-pointer text-sm select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
                 onClick={() => dispatch(setGroupAdd(true))}
               >
+                <LogIn className="w-4 h-4 text-violet-500" />
+                그룹 참가
+              </ListboxOption>
+              <ListboxOption
+                value="add"
+                className="cursor-pointer text-sm select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
+                onClick={() => dispatch(setGroupAdd(true))}
+              >
+                <PlusCircle className="w-4 h-4 text-violet-500" />
                 그룹 추가
               </ListboxOption>
               <ListboxOption
                 value="modify"
-                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+                className="cursor-pointer text-sm select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
                 onClick={() => dispatch(setGroupModify(true))}
               >
+                <Pencil className="w-4 h-4 text-violet-500" />
                 그룹 수정
               </ListboxOption>
               <ListboxOption
                 value="delete"
-                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+                className="cursor-pointer text-sm select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
               >
+                <Trash2 className="w-4 h-4 text-violet-500" />
                 그룹 삭제
               </ListboxOption>
               <ListboxOption
+                value="exit"
+                className="cursor-pointer text-sm select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4 text-violet-500" />
+                그룹 탈퇴
+              </ListboxOption>
+              <ListboxOption
                 value="MyPage"
-                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+                className="cursor-pointer text-sm select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
                 onClick={() => dispatch(setMyPage(true))}
               >
+                <User className="w-4 h-4 text-violet-500" />
                 마이페이지
               </ListboxOption>
             </ListboxOptions>

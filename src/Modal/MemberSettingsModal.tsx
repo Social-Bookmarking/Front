@@ -3,7 +3,7 @@ import { Copy, RefreshCw, Trash2, ChevronDown, QrCode } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAppSelector, useAppDispatch } from '../Util/hook';
 import { setMemberManger, setQRcodeModal } from '../Util/modalSlice';
-import { fetchMembers, changeRole } from '../Util/memberSlice';
+import { changeRole } from '../Util/memberSlice';
 import Avatar from '../Components/Avatar';
 import {
   Listbox,
@@ -24,23 +24,123 @@ const ROLE_LABEL: Record<Role, string> = {
   VIEWER: '뷰어',
 };
 
-const MemberSettingsModal = () => {
-  const dispatch = useAppDispatch();
-  const members = useAppSelector((state) => state.member.memberList);
-  const status = useAppSelector((state) => state.member.status);
-  const groupId = useAppSelector(selectSelectedGroup);
-
-  const [inviteCode, setInviteCode] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
+// 각 컴포넌트 마다 훅 적용
+const MemberRow = ({
+  member,
+  onChangeRole,
+  onRemove,
+  ownerId,
+}: {
+  member: {
+    userId: number;
+    name: string;
+    email: string | null;
+    profileImageUrl: string | null;
+    permission: Role;
+  };
+  onChangeRole: (id: number, role: Role) => void;
+  onRemove: (id: number) => void;
+  ownerId: number | null;
+}) => {
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom-start',
     middleware: [flip(), shift(), offset(4)],
   });
 
+  const isOwner = member.userId === ownerId;
+
+  return (
+    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between rounded-xl border border-violet-100 bg-white px-4 py-3">
+      <div className="flex items-center gap-3 min-w-0">
+        <Avatar name={member.name} src={member.profileImageUrl ?? ''} />
+        <div className="min-w-0">
+          <div className="font-medium text-gray-900 truncate">
+            {member.name}
+          </div>
+          <div className="text-sm text-gray-500 truncate">
+            {member.email ?? '이메일 없음'}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 sm:justify-between">
+        <div className="relative min-w-30">
+          <Listbox
+            value={member.permission}
+            onChange={(role: Role) => onChangeRole(member.userId, role)}
+            disabled={isOwner}
+          >
+            <ListboxButton
+              ref={refs.setReference}
+              className="w-full flex justify-between items-center h-10 rounded-lg border border-violet-300 bg-white px-3 text-left focus:outline-none focus:ring-2 focus:ring-violet-300"
+            >
+              <span className="truncate">{ROLE_LABEL[member.permission]}</span>
+              <ChevronDown className="w-4 h-4 text-gray-500" />
+            </ListboxButton>
+
+            <ListboxOptions
+              ref={refs.setFloating}
+              style={floatingStyles}
+              className="z-50 w-full rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none max-h-20 overflow-auto"
+            >
+              {(Object.keys(ROLE_LABEL) as Role[]).map((role) => (
+                <ListboxOption
+                  key={role}
+                  value={role}
+                  className="cursor-pointer select-none px-3 py-2 data-[focus]:bg-violet-50"
+                >
+                  {ROLE_LABEL[role]}
+                </ListboxOption>
+              ))}
+            </ListboxOptions>
+          </Listbox>
+        </div>
+
+        <button
+          onClick={() => onRemove(member.userId)}
+          className={`p-2 rounded-lg ${
+            isOwner ? 'cursor-not-allowed opacity-30' : 'hover:bg-rose-50'
+          }`}
+          aria-label="멤버 삭제"
+          disabled={isOwner}
+        >
+          <Trash2 className="w-5 h-5 text-rose-500" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const MemberSettingsModal = () => {
+  const dispatch = useAppDispatch();
+  const members = useAppSelector((state) => state.member.memberList);
+  const groupId = useAppSelector(selectSelectedGroup);
+
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const [ownerId, setOwnerId] = useState<number | null>(null);
+
   useEffect(() => {
-    if (status === 'idle' && groupId) dispatch(fetchMembers(groupId));
-  }, [dispatch, status, groupId]);
+    const fetchGroupDetail = async () => {
+      if (!groupId) return;
+      try {
+        const res = await axios.get(
+          `https://www.marksphere.link/api/groups/${groupId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
+        setOwnerId(res.data.ownerId);
+      } catch (err) {
+        console.error('그룹 상세 조회 실패', err);
+      }
+    };
+
+    fetchGroupDetail();
+  }, [groupId]);
 
   const handleGenerateCode = async () => {
     if (!groupId) return;
@@ -70,11 +170,12 @@ const MemberSettingsModal = () => {
     toast.success('초대 코드가 복사되었습니다.');
   };
 
-  const handleChangeRole = (id: string, role: Role) => {
-    dispatch(changeRole({ id, role }));
+  const handleChangeRole = (id: number, role: Role) => {
+    if (!groupId) return;
+    dispatch(changeRole({ groupId, memberId: id, role }));
   };
 
-  const handleRemove = (id: string) => {
+  const handleRemove = (id: number) => {
     console.log('remove', id);
   };
 
@@ -142,68 +243,18 @@ const MemberSettingsModal = () => {
       {/* 현재 멤버 리스트 */}
       <div className="mt-6 space-y-3 h-60 overflow-y-auto scrollbar-hidden">
         {members.map((m) => (
-          <div
-            key={m.userid}
-            className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between rounded-xl border border-violet-100 bg-white px-4 py-3"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <Avatar name={m.name} src={m.profileImageUrl} />
-              <div className="min-w-0">
-                <div className="font-medium text-gray-900 truncate">
-                  {m.name}
-                </div>
-                <div className="text-sm text-gray-500 truncate">
-                  {m.email ? m.email : '이메일 없음'}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 sm:justify-between">
-              <div className="relative min-w-30">
-                <Listbox
-                  value={m.permission}
-                  onChange={(role: Role) => handleChangeRole(m.userid, role)}
-                >
-                  <ListboxButton
-                    ref={refs.setReference}
-                    className="w-full flex justify-between items-center h-10 rounded-lg border border-violet-300 bg-white px-3 text-left focus:outline-none focus:ring-2 focus:ring-violet-300"
-                  >
-                    <span className="truncate">{ROLE_LABEL[m.permission]}</span>
-                    <ChevronDown className="w-4 h-4 text-gray-500" />
-                  </ListboxButton>
-
-                  <ListboxOptions
-                    ref={refs.setFloating}
-                    style={floatingStyles}
-                    className="z-50 w-full rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none max-h-20 overflow-auto"
-                  >
-                    {(Object.keys(ROLE_LABEL) as Role[]).map((role) => (
-                      <ListboxOption
-                        key={role}
-                        value={role}
-                        className="cursor-pointer select-none px-3 py-2 data-[focus]:bg-violet-50"
-                      >
-                        {ROLE_LABEL[role]}
-                      </ListboxOption>
-                    ))}
-                  </ListboxOptions>
-                </Listbox>
-              </div>
-
-              <button
-                onClick={() => handleRemove(m.userid)}
-                className="p-2 rounded-lg hover:bg-rose-50"
-                aria-label="멤버 삭제"
-              >
-                <Trash2 className="w-5 h-5 text-rose-500" />
-              </button>
-            </div>
-          </div>
+          <MemberRow
+            key={m.userId}
+            member={m}
+            onChangeRole={handleChangeRole}
+            onRemove={handleRemove}
+            ownerId={ownerId}
+          />
         ))}
       </div>
 
       {/* 하단 버튼 */}
-      <div className="mt-6 flex justify-end">
+      <div className="mt-6 gap-2 flex justify-end">
         <button
           className="h-10 px-4 rounded-lg border border-gray-200 hover:bg-gray-50"
           onClick={() => dispatch(setMemberManger(false))}

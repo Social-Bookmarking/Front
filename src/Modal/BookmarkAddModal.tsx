@@ -1,5 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Check, ChevronDown } from 'lucide-react';
+import { selectSelectedGroup } from '../Util/groupSlice';
+import { useAppSelector } from '../Util/hook';
+import { selectCategories } from '../Util/categorySlice';
+import {
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+} from '@headlessui/react';
+import toast from 'react-hot-toast';
 import axios from 'axios';
 
 interface OgInfo {
@@ -12,6 +22,14 @@ const BookmarkAddModal = () => {
   const [url, setUrl] = useState('');
   const [ogInfo, setOgInfo] = useState<OgInfo | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [tagIds, setTagIds] = useState<number[]>([]);
+  const [categoryId, setCategoryId] = useState<number | null>(null);
+
+  const groupId = useAppSelector(selectSelectedGroup);
+  const categories = useAppSelector(selectCategories);
 
   // 클립보드 권한 확인
   const checkClipboardPermission = async () => {
@@ -85,8 +103,34 @@ const BookmarkAddModal = () => {
     }
   };
 
+  const handleSave = async () => {
+    try {
+      await axios.post(
+        `https://www.marksphere.link/api/groups/${groupId}/bookmarks`,
+        {
+          categoryId,
+          url,
+          title,
+          description,
+          tagIds,
+          latitude: 0,
+          longitude: 0,
+          imageKey: '',
+          originalImageUrl: ogInfo?.image ?? '',
+        },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        }
+      );
+      toast.success('저장 완료!');
+    } catch (err) {
+      console.error(err);
+      toast.error('저장 실패!');
+    }
+  };
+
   return (
-    <div className="w-[50vw] max-w-md">
+    <div className="w-[50vw] max-w-md overflow-auto scrollbar-hidden">
       <h2 className="text-lg font-semibold text-violet-600 mb-4">
         📌 북마크 추가
       </h2>
@@ -98,52 +142,124 @@ const BookmarkAddModal = () => {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="URL을 입력하세요"
-          className="flex-1 px-3 py-2 border border-[#E6E5F2] rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500"
+          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500"
         />
         <button
           onClick={handleFetchOgInfo}
-          className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition"
+          className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg"
           disabled={loading}
         >
           {loading ? '불러오는 중...' : <Plus className="w-6 h-6" />}
         </button>
       </div>
 
-      {/* 미리보기 */}
+      {/* 미리보기 및 수정 UI */}
       {ogInfo && (
-        <div className="mt-4 border-b-2 border-[#E6E5F2] rounded-lg shadow-sm overflow-hidden">
+        <div className="mt-4 space-y-4 p-1 h-[400px]">
           {ogInfo.image && (
             <img
               src={ogInfo.image}
-              alt={ogInfo.title}
-              className="w-full h-40 object-cover"
+              alt={title}
+              className="w-full
+               object-cover rounded-lg"
             />
           )}
-          <div className="p-3">
-            <h3 className="font-bold text-[20px] mb-3 line-clamp-2">
-              {ogInfo.title}
-            </h3>
-            <p className="text-xs text-gray-600">{ogInfo.description}</p>
+
+          {/* 제목 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              제목
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-3 py-2 border border-[#E6E5F2] rounded-lg"
+            />
+          </div>
+
+          {/* 설명 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              설명
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-3 py-2 border border-[#E6E5F2] rounded-lg"
+            />
+          </div>
+
+          {/* 카테고리 선택 (Listbox) */}
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              카테고리
+            </label>
+            <Listbox value={categoryId} onChange={setCategoryId}>
+              <ListboxButton className="w-full flex justify-between items-center h-10 rounded-lg border border-violet-300 bg-white px-3 text-left focus:outline-none focus:ring-2 focus:ring-violet-300">
+                <span className="truncate">
+                  {categories.find((c) => c.id === categoryId)?.name ||
+                    '카테고리 선택'}
+                </span>
+                <ChevronDown className="w-4 h-4 text-gray-500" />
+              </ListboxButton>
+
+              <ListboxOptions className="absolute z-50 w-full mt-1 rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none max-h-30 overflow-auto">
+                {categories.map((cat) => (
+                  <ListboxOption
+                    key={cat.id}
+                    value={cat.id}
+                    className="cursor-pointer select-none px-3 py-2 data-[focus]:bg-violet-50 flex justify-between"
+                  >
+                    {({ selected }) => (
+                      <>
+                        <span>{cat.name}</span>
+                        {selected && (
+                          <Check className="w-4 h-4 text-violet-600" />
+                        )}
+                      </>
+                    )}
+                  </ListboxOption>
+                ))}
+              </ListboxOptions>
+            </Listbox>
+          </div>
+
+          {/* 태그 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              태그 (쉼표로 구분)
+            </label>
+            <input
+              type="text"
+              placeholder="예: 1,2,3"
+              onChange={(e) =>
+                setTagIds(
+                  e.target.value
+                    .split(',')
+                    .map((id) => parseInt(id.trim()))
+                    .filter((id) => !isNaN(id))
+                )
+              }
+              className="w-full px-3 py-2 border border-[#E6E5F2] rounded-lg"
+            />
+          </div>
+
+          {/* 버튼 */}
+          <div className="mt-6 flex justify-end gap-2">
+            <button className="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+              취소
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg"
+              disabled={!ogInfo}
+            >
+              저장
+            </button>
           </div>
         </div>
       )}
-
-      {/* 버튼 */}
-      <div className="mt-6 flex justify-end gap-2">
-        <button
-          // onClick={onClose}
-          className="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
-        >
-          취소
-        </button>
-        <button
-          // onClick={handleSave}
-          className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition"
-          disabled={!ogInfo}
-        >
-          저장
-        </button>
-      </div>
     </div>
   );
 };

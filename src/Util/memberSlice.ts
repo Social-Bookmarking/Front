@@ -1,12 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
+import toast from 'react-hot-toast';
 import axios from 'axios';
 
 type Role = 'ADMIN' | 'EDITOR' | 'VIEWER';
 
 // 나중에 수정
 interface Member {
-  userid: string;
+  userId: number;
   name: string;
   email: string;
   profileImageUrl: string;
@@ -15,12 +16,10 @@ interface Member {
 
 interface MemberState {
   memberList: Member[];
-  status: 'idle' | 'loading' | 'succeeded' | 'failed';
 }
 
 const initialState: MemberState = {
   memberList: [],
-  status: 'idle',
 };
 
 export const fetchMembers = createAsyncThunk<Member[], number>(
@@ -34,8 +33,35 @@ export const fetchMembers = createAsyncThunk<Member[], number>(
         },
       }
     );
-    console.log(res.data);
     return res.data;
+  }
+);
+
+export const changeRole = createAsyncThunk<
+  { memberId: number; role: Role },
+  { groupId: number; memberId: number; role: Role }
+>(
+  'member/changeRole',
+  async ({ groupId, memberId, role }, { rejectWithValue }) => {
+    try {
+      await axios.patch(
+        `https://www.marksphere.link/api/groups/${groupId}/members/${memberId}`,
+        { permission: role },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      return { memberId, role };
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 403) {
+        toast.error('권한이 없습니다.');
+        return rejectWithValue('forbidden');
+      }
+      toast.error('역할 변경 중 오류가 발생했습니다.');
+      return rejectWithValue('error');
+    }
   }
 );
 
@@ -46,33 +72,26 @@ const memberSlice = createSlice({
     addMember: (state, action: PayloadAction<Member>) => {
       state.memberList.push(action.payload);
     },
-    removeMember: (state, action: PayloadAction<string>) => {
+    removeMember: (state, action: PayloadAction<number>) => {
       state.memberList = state.memberList.filter(
-        (m) => m.userid !== action.payload
+        (m) => m.userId !== action.payload
       );
-    },
-    changeRole: (state, action: PayloadAction<{ id: string; role: Role }>) => {
-      const { id, role } = action.payload;
-      const target = state.memberList.find((m) => m.userid === id);
-      if (target) {
-        target.permission = role;
-      }
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchMembers.pending, (state) => {
-        state.status = 'loading';
-      })
       .addCase(fetchMembers.fulfilled, (state, action) => {
-        state.status = 'succeeded';
         state.memberList = action.payload;
       })
-      .addCase(fetchMembers.rejected, (state) => {
-        state.status = 'failed';
+      .addCase(changeRole.fulfilled, (state, action) => {
+        const { memberId, role } = action.payload;
+        const target = state.memberList.find((m) => m.userId === memberId);
+        if (target) {
+          target.permission = role;
+        }
       });
   },
 });
 
-export const { addMember, removeMember, changeRole } = memberSlice.actions;
+export const { addMember, removeMember } = memberSlice.actions;
 export default memberSlice.reducer;

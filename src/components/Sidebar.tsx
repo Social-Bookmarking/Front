@@ -6,6 +6,12 @@ import {
   Home,
   Map,
   ChevronDown,
+  LogIn,
+  PlusCircle,
+  Pencil,
+  Trash2,
+  LogOut,
+  User,
 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../Util/hook';
@@ -28,6 +34,7 @@ import {
   selectSelectedGroup,
   changeGroup,
 } from '../Util/groupSlice';
+import { fetchMembers } from '../Util/memberSlice';
 import {
   Listbox,
   ListboxButton,
@@ -54,6 +61,12 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
     dispatch(fetchCategories());
     dispatch(fetchGroups());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (selectedGroupId) {
+      dispatch(fetchMembers(selectedGroupId));
+    }
+  }, [dispatch, selectedGroupId]);
 
   return (
     <aside className="w-64 h-full p-4 border-r-2 border-[#E6E5F2] bg-[#fafafa] flex flex-col">
@@ -147,30 +160,49 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
 
             <ListboxOptions className="absolute z-50 mt-1 w-full rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none overflow-hidden">
               <ListboxOption
-                value="add"
-                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+                value="participation"
+                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
                 onClick={() => dispatch(setGroupAdd(true))}
               >
+                <LogIn className="w-4 h-4 text-violet-500" />
+                그룹 참가
+              </ListboxOption>
+              <ListboxOption
+                value="add"
+                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
+                onClick={() => dispatch(setGroupAdd(true))}
+              >
+                <PlusCircle className="w-4 h-4 text-violet-500" />
                 그룹 추가
               </ListboxOption>
               <ListboxOption
                 value="modify"
-                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
                 onClick={() => dispatch(setGroupModify(true))}
               >
+                <Pencil className="w-4 h-4 text-violet-500" />
                 그룹 수정
               </ListboxOption>
               <ListboxOption
                 value="delete"
-                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
               >
+                <Trash2 className="w-4 h-4 text-violet-500" />
                 그룹 삭제
               </ListboxOption>
               <ListboxOption
+                value="exit"
+                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4 text-violet-500" />
+                그룹 탈퇴
+              </ListboxOption>
+              <ListboxOption
                 value="MyPage"
-                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800"
+                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
                 onClick={() => dispatch(setMyPage(true))}
               >
+                <User className="w-4 h-4 text-violet-500" />
                 마이페이지
               </ListboxOption>
             </ListboxOptions>
