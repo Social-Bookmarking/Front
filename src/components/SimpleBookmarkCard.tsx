@@ -3,7 +3,7 @@ import { selectCategories } from '../Util/categorySlice';
 
 const MAX_VISIBLE = 3;
 
-type tag = { tagId: number; tagName: string };
+type Tag = { tagId: number; tagName: string };
 
 interface SimpleBookmarkCardProps {
   categoryId: number;
@@ -11,7 +11,7 @@ interface SimpleBookmarkCardProps {
   title: string;
   description: string;
   imageUrl: string;
-  tagIds: tag[];
+  tags: Tag[];
   liked: boolean;
   latitude: number;
   longitude: number;
@@ -23,7 +23,7 @@ const SimpleBookmarkCard = ({
   title,
   description,
   imageUrl,
-  tagIds,
+  tags,
 }: SimpleBookmarkCardProps) => {
   const categories = useAppSelector(selectCategories);
   const categoryName = categories.find((c) => c.id === categoryId)?.name;
@@ -52,9 +52,9 @@ const SimpleBookmarkCard = ({
           </p>
           {/* 태그 표시 */}
           <div className="flex flex-wrap gap-x-1 max-h-[40px] overflow-visible">
-            {tagIds.slice(0, MAX_VISIBLE).map((tag) => (
+            {tags.slice(0, MAX_VISIBLE).map((tag) => (
               <div key={tag.tagId} className="relative group/tag">
-                <span className="px-2 py-0.5 text-[9px] max-w-[80px] truncate bg-violet-100 text-violet-700 rounded-full cursor-default">
+                <span className="px-2 py-0.5 text-[9px] max-w-[80px] truncate bg-violet-100 text-violet-700 rounded-full cursor-default inline-block align-middle">
                   #{tag.tagName}
                 </span>
                 {/* 커스텀 툴팁 */}
@@ -65,25 +65,26 @@ const SimpleBookmarkCard = ({
                 </div>
               </div>
             ))}
-            {tagIds.length > MAX_VISIBLE && (
+            {tags.length > MAX_VISIBLE && (
               <div className="relative group/tag">
                 <span className="px-2 py-0.5 text-[9px] bg-gray-200 text-gray-700 rounded-full cursor-default">
-                  +{tagIds.length - MAX_VISIBLE}
+                  +{tags.length - MAX_VISIBLE}
                 </span>
                 {/* 나머지 태그 툴팁 */}
                 <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 hidden group-hover/tag:block z-50">
-                  <div className="px-2 py-1 text-[9px] text-white bg-gray-800 rounded-md shadow-md whitespace-nowrap max-w-[200px]">
-                    {tagIds
-                      .slice(MAX_VISIBLE)
-                      .map((t) => `#${t.tagName}`)
-                      .join(' ')}
+                  <div className="px-2 py-1 text-[9px] text-white bg-gray-800 rounded-md shadow-md inline-block whitespace-normal">
+                    {tags.slice(MAX_VISIBLE).map((t) => (
+                      <div key={t.tagId} className="block whitespace-nowrap">
+                        #{t.tagName}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             )}
           </div>
         </div>
-        <span className="absolute bottom-2 text-xs text-gray-500 truncate">
+        <span className="absolute bottom-2 left-0 right-0 px-4 text-xs text-gray-500 truncate">
           {url}
         </span>
       </div>

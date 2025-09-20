@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Plus, Check, ChevronDown } from 'lucide-react';
 import { selectSelectedGroup } from '../Util/groupSlice';
-import { useAppSelector } from '../Util/hook';
-import { selectCategories } from '../Util/categorySlice';
+import { useAppDispatch, useAppSelector } from '../Util/hook';
+import {
+  fetchCategories,
+  selectCategories,
+  selectCategory,
+} from '../Util/categorySlice';
+import { setBookMarkAdd } from '../Util/modalSlice';
 import {
   Listbox,
   ListboxButton,
@@ -11,6 +16,7 @@ import {
 } from '@headlessui/react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
+import { fetchBookmarks, reset } from '../Util/bookmarkSlice';
 
 interface OgInfo {
   title: string;
@@ -25,11 +31,12 @@ const BookmarkAddModal = () => {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [tagIds, setTagIds] = useState<number[]>([]);
+  const [tagNames, setTagNames] = useState<string[]>([]);
   const [categoryId, setCategoryId] = useState<number | null>(null);
 
   const groupId = useAppSelector(selectSelectedGroup);
   const categories = useAppSelector(selectCategories);
+  const dispatch = useAppDispatch();
 
   // 클립보드 권한 확인
   const checkClipboardPermission = async () => {
@@ -96,6 +103,7 @@ const BookmarkAddModal = () => {
         }
       );
       setOgInfo(res.data);
+      console.log(res.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -112,17 +120,35 @@ const BookmarkAddModal = () => {
           url,
           title,
           description,
-          tagIds,
-          latitude: 0,
-          longitude: 0,
+          tagNames,
+          // latitude: 0,
+          // longitude: 0,
           imageKey: '',
           originalImageUrl: ogInfo?.image ?? '',
         },
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            //멱등성 보장 -> uuid 자동 생성
+            'Idempotency-Key': crypto.randomUUID(),
+          },
         }
       );
       toast.success('저장 완료!');
+
+      dispatch(fetchCategories(groupId));
+      dispatch(reset());
+      dispatch(
+        fetchBookmarks({
+          groupId,
+          categoryId: -1,
+          page: 0,
+          keyword: '',
+        })
+      );
+
+      dispatch(selectCategory(-1));
+      dispatch(setBookMarkAdd(false));
     } catch (err) {
       console.error(err);
       toast.error('저장 실패!');
@@ -142,7 +168,7 @@ const BookmarkAddModal = () => {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="URL을 입력하세요"
-          className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500"
+          className="flex-1 px-3 py-2 border border-[#E6E5F2] rounded-lg"
         />
         <button
           onClick={handleFetchOgInfo}
@@ -160,7 +186,7 @@ const BookmarkAddModal = () => {
             <img
               src={ogInfo.image}
               alt={title}
-              className="w-full
+              className="w-full h-40
                object-cover rounded-lg"
             />
           )}
@@ -190,7 +216,7 @@ const BookmarkAddModal = () => {
             />
           </div>
 
-          {/* 카테고리 선택 (Listbox) */}
+          {/* 카테고리 선택 */}
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               카테고리
@@ -205,22 +231,24 @@ const BookmarkAddModal = () => {
               </ListboxButton>
 
               <ListboxOptions className="absolute z-50 w-full mt-1 rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none max-h-30 overflow-auto">
-                {categories.map((cat) => (
-                  <ListboxOption
-                    key={cat.id}
-                    value={cat.id}
-                    className="cursor-pointer select-none px-3 py-2 data-[focus]:bg-violet-50 flex justify-between"
-                  >
-                    {({ selected }) => (
-                      <>
-                        <span>{cat.name}</span>
-                        {selected && (
-                          <Check className="w-4 h-4 text-violet-600" />
-                        )}
-                      </>
-                    )}
-                  </ListboxOption>
-                ))}
+                {categories
+                  .filter((cat) => cat.id !== -1)
+                  .map((cat) => (
+                    <ListboxOption
+                      key={cat.id}
+                      value={cat.id}
+                      className="cursor-pointer select-none px-3 py-2 data-[focus]:bg-violet-50 flex justify-between"
+                    >
+                      {({ selected }) => (
+                        <>
+                          <span>{cat.name}</span>
+                          {selected && (
+                            <Check className="w-4 h-4 text-violet-600" />
+                          )}
+                        </>
+                      )}
+                    </ListboxOption>
+                  ))}
               </ListboxOptions>
             </Listbox>
           </div>
@@ -232,15 +260,40 @@ const BookmarkAddModal = () => {
             </label>
             <input
               type="text"
-              placeholder="예: 1,2,3"
-              onChange={(e) =>
-                setTagIds(
-                  e.target.value
-                    .split(',')
-                    .map((id) => parseInt(id.trim()))
-                    .filter((id) => !isNaN(id))
-                )
-              }
+              placeholder="예: 여행, 개발, React"
+              onChange={(e) => {
+                const MAX_TAG_LENGTH = 15;
+                const MAX_TAG_COUNT = 5;
+
+                const rawTags = e.target.value
+                  .split(',')
+                  .map((name) => name.trim())
+                  .filter((name) => name.length > 0);
+
+                const processedTags = rawTags.map((tag) => {
+                  if (tag.length > MAX_TAG_LENGTH) {
+                    toast.error(
+                      `태그는 ${MAX_TAG_LENGTH}자까지만 저장됩니다.`,
+                      {
+                        id: 'tag-length-error',
+                      }
+                    );
+                    return tag.slice(0, MAX_TAG_LENGTH);
+                  }
+                  return tag;
+                });
+
+                if (processedTags.length > MAX_TAG_COUNT) {
+                  toast.error(
+                    `태그는 최대 ${MAX_TAG_COUNT}개까지만 등록됩니다.`,
+                    {
+                      id: 'tag-count-error',
+                    }
+                  );
+                }
+
+                setTagNames(processedTags.slice(0, MAX_TAG_COUNT));
+              }}
               className="w-full px-3 py-2 border border-[#E6E5F2] rounded-lg"
             />
           </div>

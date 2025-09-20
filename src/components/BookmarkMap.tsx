@@ -1,16 +1,18 @@
 import { CustomOverlayMap, Map, MapMarker } from 'react-kakao-maps-sdk';
 import { Trash2 } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../Util/hook';
+import { bookmarkMapreset, fetchBookmarksMap } from '../Util/bookmarkMapSlice';
 import { setBookMarkMapAdd } from '../Util/modalSlice';
 import SimpleBookmarkCard from './SimpleBookmarkCard';
 import BookmarkMapSearch from './BookmarkMapSearch';
 import {
+  initializeMarkers,
   addMarker,
   removeMarker,
   toggleOpen,
   removeBookmarkFromMarker,
-} from '../Util/bookmarkMapSlice';
+} from '../Util/bookmarkMarkerSlice';
 
 interface Place {
   id: string;
@@ -24,9 +26,59 @@ interface Place {
 
 const BookmarkMap = () => {
   const dispatch = useAppDispatch();
-  const bookmarks = useAppSelector((state) => state.bookmark.items);
-  const markers = useAppSelector((state) => state.bookmarkMap.markers);
-  const openIds = useAppSelector((state) => state.bookmarkMap.openIds);
+  const bookmarks = useAppSelector((state) => state.bookmarkMap.items);
+  const selectedGroupId = useAppSelector(
+    (state) => state.group.selectedGroupId
+  );
+  const markers = useAppSelector((state) => state.bookmarkMarker.markers);
+  const openIds = useAppSelector((state) => state.bookmarkMarker.openIds);
+  const totalElements = useAppSelector(
+    (state) => state.bookmarkMap.totalElements
+  );
+
+  const page = useAppSelector((state) => state.bookmarkMap.page);
+  const totalPages = useAppSelector((state) => state.bookmarkMap.totalPages);
+  const [searchKeyword, setSearchKeyword] = useState('');
+
+  useEffect(() => {
+    dispatch(
+      fetchBookmarksMap({
+        groupId: selectedGroupId,
+        categoryId: -1,
+        page: 0,
+        keyword: '',
+      })
+    );
+  }, [dispatch, selectedGroupId]);
+
+  const handleMore = () => {
+    if (!selectedGroupId) return;
+    if (page + 1 >= totalPages) return;
+    dispatch(
+      fetchBookmarksMap({
+        groupId: selectedGroupId,
+        categoryId: -1,
+        page: page + 1,
+        keyword: searchKeyword,
+      })
+    );
+  };
+
+  useEffect(() => {
+    if (bookmarks.length > 0) {
+      dispatch(
+        initializeMarkers(
+          bookmarks
+            .filter((b) => b.latitude && b.longitude)
+            .map((b) => ({
+              bookmarkId: b.bookmarkId,
+              lat: b.latitude,
+              lng: b.longitude,
+            }))
+        )
+      );
+    }
+  }, [bookmarks, dispatch]);
 
   // 검색 관련 상태
   const [map, setMap] = useState<kakao.maps.Map>();
@@ -77,6 +129,30 @@ const BookmarkMap = () => {
     map.setLevel(1);
 
     mapContainerRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleSearch = (keyword: string) => {
+    setSearchKeyword(keyword);
+    dispatch(bookmarkMapreset());
+    dispatch(
+      fetchBookmarksMap({
+        groupId: selectedGroupId,
+        categoryId: -1,
+        page: 0,
+        keyword,
+      })
+    )
+      .unwrap()
+      .then((res) => {
+        if (res.content.length === 1) {
+          const b = res.content[0];
+          if (b.latitude && b.longitude) {
+            const center = new kakao.maps.LatLng(b.latitude, b.longitude);
+            map?.setCenter(center);
+            map?.setLevel(2);
+          }
+        }
+      });
   };
 
   return (
@@ -199,6 +275,15 @@ const BookmarkMap = () => {
             ))}
           </Map>
 
+          <div className="absolute top-2 left-2 bg-violet-600 z-1 hover:bg-violet-700 rounded-lg">
+            <button
+              className="px-3 py-1 text-sm text-white"
+              onClick={handleMore}
+            >
+              더 보기 ({bookmarks.length}/{totalElements})
+            </button>
+          </div>
+
           <div className="absolute top-0 right-0 bg-white/50 rounded-lg shadow-lg w-72 max-h-35 md:max-h-full overflow-hidden flex flex-col z-1">
             {/* 검색창 */}
             <div className="flex gap-2 p-2 border-b">
@@ -246,7 +331,13 @@ const BookmarkMap = () => {
         </div>
       </div>
       <div ref={searchCotainerRef}>
-        <BookmarkMapSearch onSelectBookmark={moveToBookmark} />
+        <BookmarkMapSearch
+          onSelectBookmark={moveToBookmark}
+          onMore={handleMore}
+          onSearch={handleSearch}
+          page={page}
+          totalPages={totalPages}
+        />
       </div>
     </div>
   );

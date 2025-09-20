@@ -1,4 +1,5 @@
 import type { FC, ReactNode } from 'react';
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ModalProps {
@@ -14,6 +15,17 @@ const Modal: FC<ModalProps> = ({
   children,
   hideCloseButton,
 }) => {
+  // 모달 열릴 때 body 스크롤 차단
+  useEffect(() => {
+    if (isOpen) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (

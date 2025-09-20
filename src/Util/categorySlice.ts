@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-export type Category = { id: number; name: string; count: number };
+export type Category = { id: number; name: string; bookmarkCount: number };
 
 export type CategoriesState = {
   list: Category[];
@@ -16,13 +16,19 @@ const initialState: CategoriesState = {
   status: 'idle',
 };
 
-// 나중에 수정해야 함.
-
 // 목록 가져오기
-export const fetchCategories = createAsyncThunk(
+export const fetchCategories = createAsyncThunk<Category[], number | null>(
   'categories/fetch',
-  async () => {
-    const res = await axios.get<Category[]>('/api/categories');
+  async (groupId) => {
+    const res = await axios.get<Category[]>(
+      `https://www.marksphere.link/api/groups/${groupId}/categories`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    );
+    console.log(res.data);
     return res.data;
   }
 );
@@ -32,8 +38,16 @@ export const fetchCategories = createAsyncThunk(
 // 추가하기
 export const createCategory = createAsyncThunk(
   'categories/create',
-  async (payload: { name: string }) => {
-    const res = await axios.post<Category>('/api/categories', payload);
+  async (payload: { groupId: number; name: string }) => {
+    const res = await axios.post<Category[]>(
+      `https://www.marksphere.link/api/groups/${payload.groupId}/categories`,
+      { name: payload.name },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    );
     return res.data;
   }
 );
@@ -42,9 +56,14 @@ export const createCategory = createAsyncThunk(
 export const renameCategory = createAsyncThunk(
   'categories/rename',
   async (payload: { id: number; name: string }) => {
-    const res = await axios.put<Category>(
-      `/api/categories/${payload.id}`,
-      payload
+    const res = await axios.patch<Category[]>(
+      `https://www.marksphere.link/api/categories/${payload.id}`,
+      { name: payload.name },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
     );
     return res.data;
   }
@@ -53,7 +72,14 @@ export const renameCategory = createAsyncThunk(
 export const deleteCategory = createAsyncThunk(
   'categories/delete',
   async (payload: { id: number }) => {
-    await axios.delete(`/api/categories/${payload.id}`);
+    await axios.delete(
+      `https://www.marksphere.link/api/categories/${payload.id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    );
     return payload.id;
   }
 );
@@ -74,25 +100,23 @@ const categoriesSlice = createSlice({
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.list = action.payload;
-        if (!state.selectedId && action.payload.length > 0) {
-          state.selectedId = state.list[0].id;
+        if (state.selectedId === null && action.payload.length > 0) {
+          state.selectedId = -1;
         }
       })
       .addCase(fetchCategories.rejected, (state) => {
         state.status = 'failed';
       })
       .addCase(createCategory.fulfilled, (state, action) => {
-        state.list.push(action.payload);
+        state.list = action.payload;
       })
       .addCase(renameCategory.fulfilled, (state, action) => {
-        const i = state.list.findIndex((c) => c.id === action.payload.id);
-        if (i >= 0) state.list[i] = action.payload;
+        state.list = action.payload;
       })
       .addCase(deleteCategory.fulfilled, (state, action) => {
         state.list = state.list.filter((c) => c.id !== action.payload);
         // 삭제 된 카테고리가 선택된 카테고리이면
-        if (state.selectedId === action.payload)
-          state.selectedId = state.list[0]?.id ?? null;
+        if (state.selectedId === action.payload) state.selectedId = -1;
       });
   },
 });

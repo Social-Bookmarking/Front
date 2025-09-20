@@ -58,13 +58,13 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
   const selectedGroup = groups.find((g) => g.teamId === selectedGroupId);
 
   useEffect(() => {
-    dispatch(fetchCategories());
     dispatch(fetchGroups());
   }, [dispatch]);
 
   useEffect(() => {
     if (selectedGroupId) {
       dispatch(fetchMembers(selectedGroupId));
+      dispatch(fetchCategories(selectedGroupId));
     }
   }, [dispatch, selectedGroupId]);
 
@@ -238,7 +238,7 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
             >
               <span>{cat.name}</span>
               <span className="text-xs text-black rounded-2xl bg-[#F1EFFB] px-2 py-0.5">
-                {cat.count}
+                {cat.bookmarkCount}
               </span>
             </button>
           );

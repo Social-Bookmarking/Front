@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../Util/hook';
-import {
-  fetchBookmarks,
-  reset,
-  updateBookmarkLocation,
-} from '../Util/bookmarkSlice';
+import { fetchBookmarks, reset, updateBookmark } from '../Util/bookmarkSlice';
 import { setBookMarkMapAdd } from '../Util/modalSlice';
 import SimpleBookmarkCard from '../Components/SimpleBookmarkCard';
-import { addBookmarkToMarker } from '../Util/bookmarkMapSlice';
+import { addBookmarkToMarker } from '../Util/bookmarkMarkerSlice';
+import { selectCategory, selectSelectedId } from '../Util/categorySlice';
 
 const BookmarkMapAddModal = () => {
   const dispatch = useAppDispatch();
   const bookmarks = useAppSelector((state) => state.bookmark.items);
   const loading = useAppSelector((state) => state.bookmark.loading);
   const context = useAppSelector((state) => state.modal.bookmarkMapContext);
+  const selectedCategory = useAppSelector(selectSelectedId);
+  const selectedGroupId = useAppSelector(
+    (state) => state.group.selectedGroupId
+  );
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -29,7 +30,7 @@ const BookmarkMapAddModal = () => {
     );
     // 위치 업데이트
     dispatch(
-      updateBookmarkLocation({
+      updateBookmark({
         bookmarkId,
         latitude: context.position.lat,
         longitude: context.position.lng,
@@ -40,14 +41,29 @@ const BookmarkMapAddModal = () => {
 
   useEffect(() => {
     dispatch(reset());
-    setPage(1);
-    dispatch(fetchBookmarks(1));
-  }, [dispatch]);
+    setPage(0);
+    dispatch(
+      fetchBookmarks({
+        groupId: selectedGroupId,
+        categoryId: selectedCategory,
+        page: 0,
+        keyword: '',
+      })
+    );
+  }, [dispatch, selectedCategory, selectedGroupId]);
 
   const handleMore = () => {
+    if (!selectedGroupId || selectCategory == null) return;
     const next = page + 1;
     setPage(next);
-    dispatch(fetchBookmarks(next));
+    dispatch(
+      fetchBookmarks({
+        groupId: selectedGroupId,
+        categoryId: selectedCategory,
+        page: next,
+        keyword: '',
+      })
+    );
   };
 
   return (
@@ -67,7 +83,7 @@ const BookmarkMapAddModal = () => {
 
       {/* 북마크 리스트 */}
       <div
-        className="flex overflow-y-auto space-x-2"
+        className="flex overflow-x-auto space-x-2"
         onWheel={(e) => {
           e.currentTarget.scrollLeft += e.deltaY;
         }}

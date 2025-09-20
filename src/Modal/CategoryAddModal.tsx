@@ -1,15 +1,17 @@
-import { useAppDispatch } from '../Util/hook';
+import { useAppSelector, useAppDispatch } from '../Util/hook';
 import { createCategory } from '../Util/categorySlice';
+import { selectSelectedGroup } from '../Util/groupSlice';
 import { setcategoryAdd } from '../Util/modalSlice';
 import { useState } from 'react';
 
 const CategoryAddModal = () => {
   const [newCategoryName, setNewCategoryName] = useState('');
+  const selectedGroupId = useAppSelector(selectSelectedGroup);
   const dispatch = useAppDispatch();
 
-  const onAdd = (text: string) => {
-    if (text.length > 0) {
-      dispatch(createCategory({ name: text }));
+  const onAdd = (groupId: number | null, text: string) => {
+    if (text.length > 0 && groupId !== null) {
+      dispatch(createCategory({ groupId: groupId, name: text }));
       dispatch(setcategoryAdd(false));
     }
   };
@@ -23,7 +25,7 @@ const CategoryAddModal = () => {
           value={newCategoryName}
           onChange={(e) => setNewCategoryName(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') onAdd(newCategoryName);
+            if (e.key === 'Enter') onAdd(selectedGroupId, newCategoryName);
           }}
           placeholder="카테고리 이름"
           className="w-full px-4 py-2 border border-[#E6E5F2] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
@@ -39,7 +41,7 @@ const CategoryAddModal = () => {
         <button
           className="flex text-white items-center gap-1 px-3 py-1.5 text-sm bg-violet-600 hover:bg-violet-400 rounded"
           onClick={() => {
-            onAdd(newCategoryName);
+            onAdd(selectedGroupId, newCategoryName);
           }}
         >
           추가

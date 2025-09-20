@@ -106,7 +106,7 @@ const Header = () => {
           </div>
         </Listbox>
         <button
-          className="flex items-center font-medium text-white gap-1 px-3 py-1.5 text-sm bg-[#7C3BED] hover:bg-violet-700 rounded"
+          className="flex items-center font-medium text-white gap-1 px-3 py-1.5 text-sm bg-violet-600 hover:bg-violet-700 rounded"
           onClick={() => dispatch(setBookMarkAdd(true))}
         >
           <Plus className="w-4 h-4" />

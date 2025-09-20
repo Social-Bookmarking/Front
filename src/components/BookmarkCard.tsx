@@ -3,10 +3,15 @@ import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../Util/hook';
 import { selectCategories } from '../Util/categorySlice';
 import { setCommentModal } from '../Util/modalSlice';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { deleteBookmark } from '../Util/bookmarkSlice';
+import { selectSelectedGroup } from '../Util/groupSlice';
 
+// 보여지는 태그 최대 개수
 const MAX_VISIBLE = 3;
 
-type tag = { tagId: number; tagName: string };
+type Tag = { tagId: number; tagName: string };
 
 interface BookmarkCardProps {
   bookmarkId: number;
@@ -19,7 +24,7 @@ interface BookmarkCardProps {
   createdAt: Date;
   categoryId: number;
   likesCount: number;
-  tagIds: tag[];
+  tags: Tag[];
   liked: boolean;
 }
 
@@ -30,13 +35,42 @@ const BookmarkCard = ({
   title,
   description,
   imageUrl,
-  tagIds,
+  tags,
   liked,
 }: BookmarkCardProps) => {
   const dispatch = useAppDispatch();
   const [isLiked, setIsLiked] = useState(liked);
   const categories = useAppSelector(selectCategories);
   const categoryName = categories.find((c) => c.id === categoryId)?.name;
+  const currentGroupId = useAppSelector(selectSelectedGroup);
+
+  const handleLike = async (nextLiked: boolean) => {
+    try {
+      if (nextLiked) {
+        await axios.post(
+          `https://www.marksphere.link/api/bookmarks/${bookmarkId}/like`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
+      } else {
+        await axios.delete(
+          `https://www.marksphere.link/api/bookmarks/${bookmarkId}/like`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
+      }
+    } catch (err) {
+      console.log(err);
+      toast.error('좋아요 도중 오류가 발생했습니다.');
+    }
+  };
 
   return (
     <div className="group bg-[#fafafa] border-2 border-[#E6E5F2] rounded-2xl shadow-sm w-full min-w-[200px] max-w-[250px]">
@@ -54,7 +88,9 @@ const BookmarkCard = ({
           }`}
           onClick={(e) => {
             e.stopPropagation();
-            setIsLiked(!isLiked);
+            const nextLiked = !isLiked;
+            setIsLiked(nextLiked);
+            handleLike(nextLiked);
           }}
         >
           <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''} `} />
@@ -63,12 +99,17 @@ const BookmarkCard = ({
           {categoryName}
         </span>
         <MessageCircleMore
-          className="absolute text-white w-4 h-4 bottom-3 right-10 hover:text-violet-700"
+          className="absolute text-gray-400 w-4 h-4 bottom-3 right-10 hover:text-violet-700"
           onClick={() =>
             dispatch(setCommentModal({ open: true, bookmarkId: bookmarkId }))
           }
         />
-        <Trash2 className="absolute text-white w-4 h-4 bottom-3 right-3 hover:text-violet-700" />
+        <Trash2
+          className="absolute text-gray-400 w-4 h-4 bottom-3 right-3 hover:text-violet-700"
+          onClick={() =>
+            dispatch(deleteBookmark({ bookmarkId, groupId: currentGroupId }))
+          }
+        />
       </div>
       <div className="relative p-4 flex flex-col justify-between h-[150px]">
         <div>
@@ -83,9 +124,9 @@ const BookmarkCard = ({
           </p>
           {/* 태그 표시 */}
           <div className="flex flex-wrap gap-x-1 max-h-[40px] overflow-visible">
-            {tagIds.slice(0, MAX_VISIBLE).map((tag) => (
+            {tags.slice(0, MAX_VISIBLE).map((tag) => (
               <div key={tag.tagId} className="relative group/tag">
-                <span className="px-2 py-0.5 text-[9px] max-w-[80px] truncate bg-violet-100 text-violet-700 rounded-full cursor-default">
+                <span className="px-2 py-0.5 text-[9px] max-w-[80px] truncate bg-violet-100 text-violet-700 rounded-full cursor-default inline-block align-middle">
                   #{tag.tagName}
                 </span>
                 {/* 커스텀 툴팁 */}
@@ -96,25 +137,26 @@ const BookmarkCard = ({
                 </div>
               </div>
             ))}
-            {tagIds.length > MAX_VISIBLE && (
+            {tags.length > MAX_VISIBLE && (
               <div className="relative group/tag">
-                <span className="px-2 py-0.5 text-[9px] bg-gray-200 text-gray-700 rounded-full cursor-default">
-                  +{tagIds.length - MAX_VISIBLE}
+                <span className="px-2 py-0.5 text-[9px] bg-gray-200 text-gray-700 rounded-full cursor-default inline-block align-middle">
+                  +{tags.length - MAX_VISIBLE}
                 </span>
                 {/* 나머지 태그 툴팁 */}
                 <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 hidden group-hover/tag:block z-50">
-                  <div className="px-2 py-1 text-[9px] text-white bg-gray-800 rounded-md shadow-md whitespace-nowrap max-w-[200px]">
-                    {tagIds
-                      .slice(MAX_VISIBLE)
-                      .map((t) => `#${t.tagName}`)
-                      .join(' ')}
+                  <div className="px-2 py-1 text-[9px] text-white bg-gray-800 rounded-md shadow-md inline-block whitespace-normal">
+                    {tags.slice(MAX_VISIBLE).map((t) => (
+                      <div key={t.tagId} className="block whitespace-nowrap">
+                        #{t.tagName}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             )}
           </div>
         </div>
-        <span className="absolute bottom-2 text-xs text-gray-500 truncate">
+        <span className="absolute bottom-2 left-0 right-0 px-4 text-xs text-gray-500 truncate">
           {url}
         </span>
       </div>

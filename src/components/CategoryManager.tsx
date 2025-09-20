@@ -1,29 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Plus, Pencil, Trash2, Check, X, Folder } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../Util/hook';
 import {
-  fetchCategories,
   selectCategories,
   selectSelectedId,
-  selectCatStatus,
   selectCategory,
   renameCategory,
   deleteCategory,
 } from '../Util/categorySlice';
 import { setcategoryAdd } from '../Util/modalSlice';
+import { fetchBookmarks } from '../Util/bookmarkSlice';
 
 const CategoryManager = () => {
   const dispatch = useAppDispatch();
   const categories = useAppSelector(selectCategories);
   const selectedId = useAppSelector(selectSelectedId);
-  const status = useAppSelector(selectCatStatus);
+  const selectedGroupId = useAppSelector(
+    (state) => state.group.selectedGroupId
+  );
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [tempName, setTempName] = useState('');
-
-  useEffect(() => {
-    if (status === 'idle') dispatch(fetchCategories());
-  }, [dispatch, status]);
 
   const startEdit = (id: number, current: string) => {
     setEditingId(id);
@@ -34,6 +31,13 @@ const CategoryManager = () => {
     const name = tempName.trim();
     if (!name) return;
     dispatch(renameCategory({ id, name }));
+    dispatch(
+      fetchBookmarks({
+        groupId: selectedGroupId,
+        categoryId: selectedId,
+        page: 0,
+      })
+    );
     setEditingId(null);
   };
 
@@ -43,6 +47,13 @@ const CategoryManager = () => {
 
   const onDelete = (id: number) => {
     dispatch(deleteCategory({ id }));
+    dispatch(
+      fetchBookmarks({
+        groupId: selectedGroupId,
+        categoryId: -1,
+        page: 0,
+      })
+    );
   };
 
   return (
@@ -128,22 +139,26 @@ const CategoryManager = () => {
                 ) : (
                   <>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-violet-50 text-violet-700">
-                      {c.count}
+                      {c.bookmarkCount}
                     </span>
-                    <button
-                      onClick={() => startEdit(c.id, c.name)}
-                      className="p-1 rounded hover:bg-gray-100"
-                      aria-label="이름 수정"
-                    >
-                      <Pencil className="w-4 h-4 text-gray-600" />
-                    </button>
-                    <button
-                      onClick={() => onDelete(c.id)}
-                      className="p-1 rounded hover:bg-gray-100"
-                      aria-label="삭제"
-                    >
-                      <Trash2 className="w-4 h-4 text-rose-600" />
-                    </button>
+                    {c.id !== -1 && (
+                      <>
+                        <button
+                          onClick={() => startEdit(c.id, c.name)}
+                          className="p-1 rounded hover:bg-gray-100"
+                          aria-label="이름 수정"
+                        >
+                          <Pencil className="w-4 h-4 text-gray-600" />
+                        </button>
+                        <button
+                          onClick={() => onDelete(c.id)}
+                          className="p-1 rounded hover:bg-gray-100"
+                          aria-label="삭제"
+                        >
+                          <Trash2 className="w-4 h-4 text-rose-600" />
+                        </button>
+                      </>
+                    )}
                   </>
                 )}
               </div>

@@ -1,79 +1,111 @@
-// src/Util/bookmarkMapSlice.ts
-import { createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios';
 
-type latlng = { lat: number; lng: number };
-export type Marker = {
-  id: number;
-  position: latlng;
-  bookmarks: number[];
-};
+type Tag = { tagId: number; tagName: string };
 
-interface BookmarkMapState {
-  markers: Marker[];
-  counter: number;
-  openIds: number[];
+interface Bookmark {
+  bookmarkId: number;
+  url: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  latitude: number;
+  longitude: number;
+  createdAt: Date;
+  categoryId: number;
+  likesCount: number;
+  tags: Tag[];
+  liked: boolean;
 }
 
-const initialState: BookmarkMapState = {
-  markers: [],
-  counter: 1,
-  openIds: [],
+interface PageResponse<T> {
+  content: T[];
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  totalElements: number;
+  first: boolean;
+  last: boolean;
+}
+
+interface BookmarkState {
+  items: Bookmark[];
+  loading: boolean;
+  page: number;
+  totalPages: number;
+  totalElements: number;
+}
+
+const initialState: BookmarkState = {
+  items: [],
+  loading: false,
+  page: -1,
+  totalPages: 0,
+  totalElements: 0,
 };
 
-const bookmarkMapSlice = createSlice({
-  name: 'bookmarkMap',
+export const fetchBookmarksMap = createAsyncThunk<
+  PageResponse<Bookmark>,
+  {
+    groupId: number | null;
+    categoryId: number | null;
+    page: number;
+    keyword?: string;
+  }
+>('bookmarkMaps/fetch', async ({ groupId, categoryId, page, keyword }) => {
+  if (categoryId === -1) {
+    categoryId = null;
+  }
+
+  const { data } = await axios.get<PageResponse<Bookmark>>(
+    `https://www.marksphere.link/api/groups/${groupId}/bookmarks/map`,
+    {
+      params: { page, categoryId, keyword },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    }
+  );
+  console.log(data);
+  return data;
+});
+
+const bookmarMapSlice = createSlice({
+  name: 'bookmarkMaps',
   initialState,
   reducers: {
-    addMarker: (state, action: PayloadAction<latlng>) => {
-      state.markers.push({
-        id: state.counter,
-        position: action.payload,
-        bookmarks: [],
+    bookmarkMapreset(state) {
+      state.items = [];
+      state.loading = false;
+      state.page = -1;
+      state.totalPages = 0;
+      state.totalElements = 0;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchBookmarksMap.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchBookmarksMap.fulfilled, (state, action) => {
+        const { content, pageNumber, totalPages, totalElements } =
+          action.payload;
+        if (pageNumber <= state.page) {
+          state.loading = false;
+          return;
+        }
+
+        state.items = [...state.items, ...content];
+        state.page = pageNumber;
+        state.totalPages = totalPages;
+        state.totalElements = totalElements;
+        state.loading = false;
+      })
+      .addCase(fetchBookmarksMap.rejected, (state) => {
+        state.loading = false;
       });
-      state.counter += 1;
-    },
-    removeMarker: (state, action: PayloadAction<number>) => {
-      state.markers = state.markers.filter((m) => m.id !== action.payload);
-      state.openIds = state.openIds.filter((id) => id !== action.payload);
-    },
-    toggleOpen: (state, action: PayloadAction<number>) => {
-      const id = action.payload;
-      if (state.openIds.includes(id)) {
-        state.openIds = state.openIds.filter((oid) => oid !== id);
-      } else {
-        state.openIds.push(id);
-      }
-    },
-    addBookmarkToMarker: (
-      state,
-      action: PayloadAction<{ markerId: number; bookmarkId: number }>
-    ) => {
-      const { markerId, bookmarkId } = action.payload;
-      const marker = state.markers.find((m) => m.id === markerId);
-      if (marker && !marker.bookmarks.includes(bookmarkId)) {
-        marker.bookmarks.push(bookmarkId);
-      }
-    },
-    removeBookmarkFromMarker: (
-      state,
-      action: PayloadAction<{ markerId: number; bookmarkId: number }>
-    ) => {
-      const { markerId, bookmarkId } = action.payload;
-      const marker = state.markers.find((m) => m.id === markerId);
-      if (marker) {
-        marker.bookmarks = marker.bookmarks.filter((id) => id !== bookmarkId);
-      }
-    },
   },
 });
 
-export const {
-  addMarker,
-  removeMarker,
-  toggleOpen,
-  addBookmarkToMarker,
-  removeBookmarkFromMarker,
-} = bookmarkMapSlice.actions;
-
-export default bookmarkMapSlice.reducer;
+export const { bookmarkMapreset } = bookmarMapSlice.actions;
+export default bookmarMapSlice.reducer;

@@ -32,8 +32,8 @@ const MyPage = () => {
 
   useEffect(() => {
     dispatch(reset());
-    setPage(1);
-    dispatch(fetchBookmarks(1));
+    setPage(0);
+    dispatch(fetchBookmarks(0));
   }, [dispatch]);
 
   const handleMore = () => {

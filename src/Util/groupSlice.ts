@@ -66,6 +66,6 @@ export const changeGroup =
   (groupId: number) => async (dispatch: AppDispatch) => {
     dispatch(selectGroup(groupId));
     // 나중에 API 주소에 groupId를 넣어야 함.
-    await dispatch(fetchCategories());
+    await dispatch(fetchCategories(groupId));
     await dispatch(fetchMembers(groupId));
   };

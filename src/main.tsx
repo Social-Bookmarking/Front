@@ -7,8 +7,8 @@ import { Provider } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
 
 // 나중에 수정 (목 데이터)
-import { setupMocks } from './Mocks/mock.ts';
-setupMocks();
+// import { setupMocks } from './Mocks/mock.ts';
+// setupMocks();
 
 createRoot(document.getElementById('root')!).render(
   <Provider store={store}>
