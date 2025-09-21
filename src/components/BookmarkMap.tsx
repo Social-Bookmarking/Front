@@ -104,6 +104,7 @@ const BookmarkMap = () => {
     if (map && bookmarks.length > 0) {
       const first = bookmarks[0];
       if (first.latitude && first.longitude) {
+        map.relayout();
         map.setCenter(new kakao.maps.LatLng(first.latitude, first.longitude));
         map.setLevel(2);
       }
@@ -123,13 +124,13 @@ const BookmarkMap = () => {
     ps.keywordSearch(keyword, (data, status) => {
       if (status === kakao.maps.services.Status.OK) {
         setPlaces(data as Place[]);
-        const bounds = new kakao.maps.LatLngBounds();
-        for (let i = 0; i < data.length; i++) {
-          bounds.extend(
-            new kakao.maps.LatLng(Number(data[i].y), Number(data[i].x))
-          );
-        }
-        map.setBounds(bounds);
+        // const bounds = new kakao.maps.LatLngBounds();
+        // for (let i = 0; i < data.length; i++) {
+        //   bounds.extend(
+        //     new kakao.maps.LatLng(Number(data[i].y), Number(data[i].x))
+        //   );
+        // }
+        // map.setBounds(bounds);
       } else {
         setPlaces([]);
       }
@@ -139,9 +140,23 @@ const BookmarkMap = () => {
   // 장소 검색 -> 이동
   const moveToPlace = (p: Place) => {
     if (!map) return;
-    const center = new kakao.maps.LatLng(Number(p.y), Number(p.x));
+    const lat = Number(p.y);
+    const lng = Number(p.x);
+
+    console.log(lat, lng);
+
+    const center = new kakao.maps.LatLng(lat, lng);
+
+    map.relayout();
     map.setCenter(center);
-    map.setLevel(1);
+    map.setLevel(2);
+
+    dispatch(
+      addMarker({
+        lat,
+        lng,
+      })
+    );
   };
 
   // 북마크 검색 -> 이동
@@ -220,7 +235,11 @@ const BookmarkMap = () => {
             }}
           >
             {/* 마커 모달 */}
-            <MarkerClusterer averageCenter={true} minLevel={2}>
+            <MarkerClusterer
+              key={markers.length}
+              averageCenter={true}
+              minLevel={3}
+            >
               {markers.map((m) => (
                 <div key={m.id}>
                   <MapMarker
