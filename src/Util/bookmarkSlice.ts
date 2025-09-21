@@ -58,6 +58,7 @@ export const fetchBookmarks = createAsyncThunk<
     categoryId = null;
   }
 
+  console.log('북마크 보내는 페이지', page);
   const { data } = await axios.get<PageResponse<Bookmark>>(
     `https://www.marksphere.link/api/groups/${groupId}/bookmarks`,
     {
@@ -67,6 +68,7 @@ export const fetchBookmarks = createAsyncThunk<
       },
     }
   );
+  console.log('북마크', data);
   return data;
 });
 
@@ -83,6 +85,7 @@ export const updateBookmark = createAsyncThunk<
       },
     }
   );
+  console.log(data);
   return data;
 });
 

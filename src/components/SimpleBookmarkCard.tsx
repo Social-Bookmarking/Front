@@ -13,8 +13,8 @@ interface SimpleBookmarkCardProps {
   imageUrl: string;
   tags: Tag[];
   liked: boolean;
-  latitude: number;
-  longitude: number;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 const SimpleBookmarkCard = ({

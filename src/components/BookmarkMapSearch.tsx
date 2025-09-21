@@ -51,16 +51,21 @@ const BookmarkMapSearch = ({
       {/* 북마크 카드 목록 */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {bookmarks.length > 0 ? (
-          bookmarks.map((bookmark, idx) => (
-            <div
-              key={idx}
-              onClick={() =>
-                onSelectBookmark(bookmark.latitude, bookmark.longitude)
-              }
-            >
-              <SimpleBookmarkCard {...bookmark} />
-            </div>
-          ))
+          bookmarks
+            .filter((b) => b.latitude != null && b.longitude != null)
+            .map((bookmark, idx) => (
+              <div
+                key={idx}
+                onClick={() =>
+                  onSelectBookmark(
+                    bookmark.latitude as number,
+                    bookmark.longitude as number
+                  )
+                }
+              >
+                <SimpleBookmarkCard {...bookmark} />
+              </div>
+            ))
         ) : (
           <div className="text-center text-gray-500 col-span-full">
             검색 결과 없음
@@ -69,7 +74,7 @@ const BookmarkMapSearch = ({
       </div>
 
       {/* 더 보기 버튼 */}
-      {page + 1 < totalPages && (
+      {page + 1 <= totalPages && (
         <div className="mt-6 flex justify-center">
           <button
             onClick={onMore}

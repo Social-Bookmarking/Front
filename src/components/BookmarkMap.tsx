@@ -1,8 +1,17 @@
-import { CustomOverlayMap, Map, MapMarker } from 'react-kakao-maps-sdk';
+import {
+  CustomOverlayMap,
+  Map,
+  MapMarker,
+  MarkerClusterer,
+} from 'react-kakao-maps-sdk';
 import { Trash2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../Util/hook';
-import { bookmarkMapreset, fetchBookmarksMap } from '../Util/bookmarkMapSlice';
+import {
+  bookmarkMapreset,
+  clearBookmarkLocation,
+  fetchBookmarksMap,
+} from '../Util/bookmarkMapSlice';
 import { setBookMarkMapAdd } from '../Util/modalSlice';
 import SimpleBookmarkCard from './SimpleBookmarkCard';
 import BookmarkMapSearch from './BookmarkMapSearch';
@@ -13,6 +22,7 @@ import {
   toggleOpen,
   removeBookmarkFromMarker,
 } from '../Util/bookmarkMarkerSlice';
+import { updateBookmark } from '../Util/bookmarkSlice';
 
 interface Place {
   id: string;
@@ -36,16 +46,17 @@ const BookmarkMap = () => {
     (state) => state.bookmarkMap.totalElements
   );
 
-  const page = useAppSelector((state) => state.bookmarkMap.page);
+  const [page, setPage] = useState(0);
   const totalPages = useAppSelector((state) => state.bookmarkMap.totalPages);
   const [searchKeyword, setSearchKeyword] = useState('');
 
   useEffect(() => {
+    setPage(1);
     dispatch(
       fetchBookmarksMap({
         groupId: selectedGroupId,
         categoryId: -1,
-        page: 0,
+        page: 1,
         keyword: '',
       })
     );
@@ -53,7 +64,7 @@ const BookmarkMap = () => {
 
   const handleMore = () => {
     if (!selectedGroupId) return;
-    if (page + 1 >= totalPages) return;
+    if (page + 1 > totalPages) return;
     dispatch(
       fetchBookmarksMap({
         groupId: selectedGroupId,
@@ -72,8 +83,8 @@ const BookmarkMap = () => {
             .filter((b) => b.latitude && b.longitude)
             .map((b) => ({
               bookmarkId: b.bookmarkId,
-              lat: b.latitude,
-              lng: b.longitude,
+              lat: b.latitude as number,
+              lng: b.longitude as number,
             }))
         )
       );
@@ -82,10 +93,22 @@ const BookmarkMap = () => {
 
   // 검색 관련 상태
   const [map, setMap] = useState<kakao.maps.Map>();
+
   const [keyword, setKeyword] = useState('');
   const [places, setPlaces] = useState<Place[]>([]);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const searchCotainerRef = useRef<HTMLDivElement>(null);
+
+  // 지도 첫 북마크 위치로 이동
+  useEffect(() => {
+    if (map && bookmarks.length > 0) {
+      const first = bookmarks[0];
+      if (first.latitude && first.longitude) {
+        map.setCenter(new kakao.maps.LatLng(first.latitude, first.longitude));
+        map.setLevel(2);
+      }
+    }
+  }, [map, bookmarks]);
 
   const stopOnMap = (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -126,7 +149,7 @@ const BookmarkMap = () => {
     if (!map) return;
     const center = new kakao.maps.LatLng(lat, lng);
     map.setCenter(center);
-    map.setLevel(1);
+    map.setLevel(2);
 
     mapContainerRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -138,7 +161,7 @@ const BookmarkMap = () => {
       fetchBookmarksMap({
         groupId: selectedGroupId,
         categoryId: -1,
-        page: 0,
+        page: 1,
         keyword,
       })
     )
@@ -182,7 +205,7 @@ const BookmarkMap = () => {
         >
           <Map
             id="map"
-            center={{ lat: 36.1185, lng: 128.4227 }}
+            center={{ lat: 37.5665, lng: 126.978 }}
             className="w-full h-full"
             level={3}
             onCreate={setMap}
@@ -197,82 +220,111 @@ const BookmarkMap = () => {
             }}
           >
             {/* 마커 모달 */}
-            {markers.map((m) => (
-              <div key={m.id}>
-                <MapMarker
-                  position={m.position}
-                  onClick={() => dispatch(toggleOpen(m.id))}
-                />
-                {openIds.includes(m.id) && (
-                  <CustomOverlayMap position={m.position} yAnchor={1}>
-                    <div
-                      className="flex flex-col rounded-lg shadow bg-white border p-3 text-sm min-w-60"
-                      onMouseDown={stopOnMap}
-                      onTouchStart={stopOnMap}
-                      onClick={stopOnMap}
-                    >
-                      {/* 마커에 등록된 북마크 리스트 */}
+            <MarkerClusterer averageCenter={true} minLevel={2}>
+              {markers.map((m) => (
+                <div key={m.id}>
+                  <MapMarker
+                    position={m.position}
+                    onClick={() => dispatch(toggleOpen(m.id))}
+                  />
+                  {openIds.includes(m.id) && (
+                    <CustomOverlayMap position={m.position} yAnchor={1}>
                       <div
-                        className="space-y-2 max-h-75 overflow-y-auto"
-                        onWheel={(e) => e.stopPropagation()}
+                        className="flex flex-col rounded-lg shadow bg-white border p-3 text-sm min-w-60"
+                        onMouseDown={stopOnMap}
+                        onTouchStart={stopOnMap}
+                        onClick={stopOnMap}
                       >
-                        {m.bookmarks.map((bid) => {
-                          const b = bookmarks.find((b) => b.bookmarkId === bid);
-                          if (!b) return null;
-                          return (
-                            <div key={bid} className="relative">
-                              <SimpleBookmarkCard {...b} />
-                              <button
-                                className="absolute top-2 right-2 text-red-500"
-                                onClick={() =>
-                                  dispatch(
-                                    removeBookmarkFromMarker({
-                                      markerId: m.id,
-                                      bookmarkId: bid,
-                                    })
-                                  )
-                                }
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
+                        {/* 마커에 등록된 북마크 리스트 */}
+                        <div
+                          className="space-y-2 max-h-75 overflow-y-auto"
+                          onWheel={(e) => e.stopPropagation()}
+                        >
+                          {m.bookmarks.map((bid) => {
+                            const b = bookmarks.find(
+                              (b) => b.bookmarkId === bid
+                            );
+                            if (!b) return null;
+                            return (
+                              <div key={bid} className="relative">
+                                <SimpleBookmarkCard {...b} />
+                                <button
+                                  className="absolute top-2 right-2 text-red-500"
+                                  onClick={async () => {
+                                    await dispatch(
+                                      updateBookmark({
+                                        bookmarkId: b.bookmarkId,
+                                        latitude: -1,
+                                        longitude: -1,
+                                      })
+                                    );
 
-                      {/* 북마크 추가 버튼 */}
-                      <button
-                        className="mt-2 px-2 py-1 bg-violet-500 text-white rounded text-xs"
-                        onClick={() =>
-                          dispatch(
-                            setBookMarkMapAdd({
-                              open: true,
-                              marker: m,
-                            })
-                          )
-                        }
-                      >
-                        북마크 추가
-                      </button>
-                      <div className="flex w-full items-center justify-between mt-2 space-x-2 text-xs">
+                                    dispatch(clearBookmarkLocation(bid));
+
+                                    dispatch(
+                                      removeBookmarkFromMarker({
+                                        markerId: m.id,
+                                        bookmarkId: bid,
+                                      })
+                                    );
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* 북마크 추가 버튼 */}
                         <button
-                          className="bg-red-500 w-full text-white px-2 py-1 rounded"
-                          onClick={() => dispatch(removeMarker(m.id))}
+                          className="mt-2 px-2 py-1 bg-violet-500 text-white rounded text-xs"
+                          onClick={() =>
+                            dispatch(
+                              setBookMarkMapAdd({
+                                open: true,
+                                marker: m,
+                              })
+                            )
+                          }
                         >
-                          마커 삭제
+                          북마크 추가
                         </button>
-                        <button
-                          className="bg-gray-200 w-full px-2 py-1 rounded"
-                          onClick={() => dispatch(toggleOpen(m.id))}
-                        >
-                          닫기
-                        </button>
+                        <div className="flex w-full items-center justify-between mt-2 space-x-2 text-xs">
+                          <button
+                            className="bg-red-500 w-full text-white px-2 py-1 rounded"
+                            onClick={async () => {
+                              if (m.bookmarks.length > 0) {
+                                const bid = m.bookmarks[0];
+
+                                await dispatch(
+                                  updateBookmark({
+                                    bookmarkId: bid,
+                                    latitude: -1,
+                                    longitude: -1,
+                                  })
+                                );
+                                dispatch(clearBookmarkLocation(bid));
+                              }
+                              // 마커 제거
+                              dispatch(removeMarker(m.id));
+                            }}
+                          >
+                            마커 삭제
+                          </button>
+                          <button
+                            className="bg-gray-200 w-full px-2 py-1 rounded"
+                            onClick={() => dispatch(toggleOpen(m.id))}
+                          >
+                            닫기
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </CustomOverlayMap>
-                )}
-              </div>
-            ))}
+                    </CustomOverlayMap>
+                  )}
+                </div>
+              ))}
+            </MarkerClusterer>
           </Map>
 
           <div className="absolute top-2 left-2 bg-violet-600 z-1 hover:bg-violet-700 rounded-lg">
@@ -280,7 +332,13 @@ const BookmarkMap = () => {
               className="px-3 py-1 text-sm text-white"
               onClick={handleMore}
             >
-              더 보기 ({bookmarks.length}/{totalElements})
+              더 보기 (
+              {
+                bookmarks.filter(
+                  (b) => b.latitude != null && b.longitude != null
+                ).length
+              }
+              /{totalElements})
             </button>
           </div>
 

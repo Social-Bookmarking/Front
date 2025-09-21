@@ -14,7 +14,8 @@ const Main = () => {
   const selectedCategory = useAppSelector(selectSelectedId);
   const selectedGroupId = useAppSelector((s) => s.group.selectedGroupId);
 
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
+  const totalPages = useAppSelector((s) => s.bookmark.totalPages);
   const [inputKeyword, setInputKeyword] = useState('');
   const [keyword, setKeyword] = useState('');
 
@@ -28,7 +29,7 @@ const Main = () => {
       fetchBookmarks({
         groupId: selectedGroupId,
         categoryId: selectedCategory,
-        page: 0,
+        page: 1,
         keyword,
       })
     );
@@ -37,7 +38,9 @@ const Main = () => {
   // 더보기 버튼
   const handleMore = () => {
     if (!selectedGroupId || selectedCategory == null) return;
+    if (page + 1 > totalPages) return;
     const next = page + 1;
+    console.log('페이지, 다음 : ', page, next);
     setPage(next);
     dispatch(
       fetchBookmarks({
