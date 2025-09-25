@@ -199,6 +199,7 @@ const BookmarkAddModal = () => {
             <input
               type="text"
               value={title}
+              placeholder={ogInfo.title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-3 py-2 border border-[#E6E5F2] rounded-lg"
             />
@@ -211,8 +212,9 @@ const BookmarkAddModal = () => {
             </label>
             <textarea
               value={description}
+              placeholder={ogInfo.description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 border border-[#E6E5F2] rounded-lg"
+              className="w-full h-30 px-3 py-2 border border-[#E6E5F2] rounded-lg"
             />
           </div>
 

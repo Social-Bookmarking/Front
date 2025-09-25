@@ -24,7 +24,9 @@ const BookmarkMapAddModal = () => {
 
   const [page, setPage] = useState(0);
   const totalPages = useAppSelector((state) => state.bookmark.totalPages);
-  const [search, setSearch] = useState('');
+
+  const [inputKeyword, setInputKeyword] = useState('');
+  const [keyword, setKeyword] = useState('');
 
   const handleSelect = async (bookmarkId: number) => {
     if (!context) return;
@@ -92,6 +94,7 @@ const BookmarkMapAddModal = () => {
   };
 
   useEffect(() => {
+    if (selectedCategory === null || selectedGroupId === null) return;
     dispatch(reset());
     setPage(1);
     dispatch(
@@ -99,10 +102,10 @@ const BookmarkMapAddModal = () => {
         groupId: selectedGroupId,
         categoryId: selectedCategory,
         page: 0,
-        keyword: '',
+        keyword: keyword,
       })
     );
-  }, [dispatch, selectedCategory, selectedGroupId]);
+  }, [dispatch, selectedCategory, selectedGroupId, keyword]);
 
   const handleMore = () => {
     if (!selectedGroupId || selectCategory == null) return;
@@ -114,9 +117,13 @@ const BookmarkMapAddModal = () => {
         groupId: selectedGroupId,
         categoryId: selectedCategory,
         page: next,
-        keyword: '',
+        keyword: keyword,
       })
     );
+  };
+
+  const handleSearch = () => {
+    setKeyword(inputKeyword.trim());
   };
 
   return (
@@ -126,28 +133,46 @@ const BookmarkMapAddModal = () => {
       </div>
 
       {/* 검색창 */}
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="북마크 검색..."
-        className="mb-2 px-4 py-2 border text-sm border-[#E6E5F2] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
-      />
-
+      <div className="flex gap-2 mb-2">
+        <input
+          type="text"
+          value={inputKeyword}
+          onChange={(e) => setInputKeyword(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSearch();
+          }}
+          placeholder="북마크 검색..."
+          className="flex-1 px-4 py-2 border text-sm border-[#E6E5F2] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+        />
+        <button
+          className="px-3 py-2 bg-violet-500 text-white rounded"
+          onClick={handleSearch}
+        >
+          검색
+        </button>
+      </div>
       {/* 북마크 리스트 */}
       <div
-        className="flex overflow-x-auto space-x-2"
+        className="flex overflow-x-auto space-x-2 h-80"
         onWheel={(e) => {
           e.currentTarget.scrollLeft += e.deltaY;
         }}
       >
-        {bookmarks
-          .filter((b) => b.title.toLowerCase().includes(search.toLowerCase()))
-          .map((b) => (
-            <div key={b.bookmarkId} onClick={() => handleSelect(b.bookmarkId)}>
+        {bookmarks.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center text-gray-400">
+            검색 결과 없음
+          </div>
+        ) : (
+          bookmarks.map((b) => (
+            <div
+              key={b.bookmarkId}
+              onClick={() => handleSelect(b.bookmarkId)}
+              className="w-[200px]"
+            >
               <SimpleBookmarkCard {...b} />
             </div>
-          ))}
+          ))
+        )}
       </div>
 
       {/* 더보기 버튼 */}

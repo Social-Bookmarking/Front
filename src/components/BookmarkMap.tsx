@@ -236,7 +236,7 @@ const BookmarkMap = () => {
           >
             {/* 마커 모달 */}
             <MarkerClusterer
-              key={markers.length}
+              key={markers.length + openIds.length}
               averageCenter={true}
               minLevel={3}
             >
@@ -244,10 +244,26 @@ const BookmarkMap = () => {
                 <div key={m.id}>
                   <MapMarker
                     position={m.position}
-                    onClick={() => dispatch(toggleOpen(m.id))}
+                    onClick={() => {
+                      if (map) {
+                        if (map && map.getLevel() >= 3) {
+                          map.setLevel(2);
+                        }
+                        const center = new kakao.maps.LatLng(
+                          m.position.lat,
+                          m.position.lng
+                        );
+                        map.setCenter(center);
+                        dispatch(toggleOpen(m.id));
+                      }
+                    }}
                   />
                   {openIds.includes(m.id) && (
-                    <CustomOverlayMap position={m.position} yAnchor={1}>
+                    <CustomOverlayMap
+                      position={m.position}
+                      yAnchor={0.5}
+                      zIndex={999}
+                    >
                       <div
                         className="flex flex-col rounded-lg shadow bg-white border p-3 text-sm min-w-60"
                         onMouseDown={stopOnMap}
@@ -307,7 +323,9 @@ const BookmarkMap = () => {
                             )
                           }
                         >
-                          북마크 추가
+                          {m.bookmarks.length === 0
+                            ? '북마크 추가'
+                            : '북마크 수정'}
                         </button>
                         <div className="flex w-full items-center justify-between mt-2 space-x-2 text-xs">
                           <button

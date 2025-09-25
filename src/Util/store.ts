@@ -6,9 +6,12 @@ import bookmarkReducer from './bookmarkSlice';
 import groupReducer from './groupSlice';
 import bookmarkMarkerReducer from './bookmarkMarkerSlice';
 import bookmarkMapReducer from './bookmarkMapSlice';
+import userReducer from './user';
+import userBookmarkReducer from './userBookmarkSlice';
 
 export const store = configureStore({
   reducer: {
+    user: userReducer,
     bookmark: bookmarkReducer,
     bookmarkMarker: bookmarkMarkerReducer,
     bookmarkMap: bookmarkMapReducer,
@@ -16,6 +19,7 @@ export const store = configureStore({
     modal: modalReducer,
     member: membersReducer,
     group: groupReducer,
+    userBookmark: userBookmarkReducer,
   },
 });
 

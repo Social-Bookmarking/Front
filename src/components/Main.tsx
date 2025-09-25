@@ -40,7 +40,6 @@ const Main = () => {
     if (!selectedGroupId || selectedCategory == null) return;
     if (page + 1 > totalPages) return;
     const next = page + 1;
-    console.log('페이지, 다음 : ', page, next);
     setPage(next);
     dispatch(
       fetchBookmarks({
