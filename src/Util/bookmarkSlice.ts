@@ -1,4 +1,8 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {
+  createSlice,
+  createAsyncThunk,
+  type PayloadAction,
+} from '@reduxjs/toolkit';
 import { fetchCategories } from './categorySlice';
 import axios from 'axios';
 
@@ -33,6 +37,7 @@ interface BookmarkState {
   items: Bookmark[];
   loading: boolean;
   page: number;
+  uiPage: number;
   totalPages: number;
   totalElements: number;
 }
@@ -41,6 +46,7 @@ const initialState: BookmarkState = {
   items: [],
   loading: false,
   page: -1,
+  uiPage: 1,
   totalPages: 0,
   totalElements: 0,
 };
@@ -114,8 +120,12 @@ const bookmarkSlice = createSlice({
       state.items = [];
       state.loading = false;
       state.page = -1;
+      state.uiPage = 1;
       state.totalPages = 0;
       state.totalElements = 0;
+    },
+    nextUiPage(state, action: PayloadAction<number>) {
+      state.uiPage = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -158,5 +168,5 @@ const bookmarkSlice = createSlice({
   },
 });
 
-export const { reset } = bookmarkSlice.actions;
+export const { reset, nextUiPage } = bookmarkSlice.actions;
 export default bookmarkSlice.reducer;

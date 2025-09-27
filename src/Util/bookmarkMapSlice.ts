@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 type Tag = { tagId: number; tagName: string };
@@ -83,39 +82,6 @@ const bookmarMapSlice = createSlice({
       state.totalPages = 0;
       state.totalElements = 0;
     },
-    clearBookmarkLocation(state, action: PayloadAction<number>) {
-      const bookmarkId = action.payload;
-      const target = state.items.find((b) => b.bookmarkId === bookmarkId);
-      if (target) {
-        target.latitude = null;
-        target.longitude = null;
-        state.totalElements -= 1;
-      }
-    },
-    // 새 북마크 추가
-    addBookmarkToMap(state, action: PayloadAction<Bookmark>) {
-      const exists = state.items.find(
-        (b) => b.bookmarkId === action.payload.bookmarkId
-      );
-      if (exists) {
-        const wasUnlocated =
-          exists.latitude == null || exists.longitude == null;
-
-        exists.latitude = action.payload.latitude;
-        exists.longitude = action.payload.longitude;
-
-        if (
-          wasUnlocated &&
-          exists.latitude != null &&
-          exists.longitude != null
-        ) {
-          state.totalElements += 1;
-        }
-      } else {
-        state.items.push(action.payload);
-        state.totalElements += 1;
-      }
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -142,6 +108,5 @@ const bookmarMapSlice = createSlice({
   },
 });
 
-export const { bookmarkMapreset, clearBookmarkLocation, addBookmarkToMap } =
-  bookmarMapSlice.actions;
+export const { bookmarkMapreset } = bookmarMapSlice.actions;
 export default bookmarMapSlice.reducer;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import BookmarkCard from './BookmarkCard';
 import CategoryManager from './CategoryManager';
-import { fetchBookmarks, reset } from '../Util/bookmarkSlice';
+import { fetchBookmarks, nextUiPage, reset } from '../Util/bookmarkSlice';
 import { selectSelectedId } from '../Util/categorySlice';
 import { useAppDispatch, useAppSelector } from '../Util/hook';
 
@@ -14,7 +14,7 @@ const Main = () => {
   const selectedCategory = useAppSelector(selectSelectedId);
   const selectedGroupId = useAppSelector((s) => s.group.selectedGroupId);
 
-  const [page, setPage] = useState(0);
+  const uipage = useAppSelector((s) => s.bookmark.uiPage);
   const totalPages = useAppSelector((s) => s.bookmark.totalPages);
   const [inputKeyword, setInputKeyword] = useState('');
   const [keyword, setKeyword] = useState('');
@@ -24,12 +24,11 @@ const Main = () => {
   useEffect(() => {
     if (selectedCategory === null || selectedGroupId === null) return;
     dispatch(reset());
-    setPage(1);
     dispatch(
       fetchBookmarks({
         groupId: selectedGroupId,
         categoryId: selectedCategory,
-        page: 1,
+        page: uipage,
         keyword,
       })
     );
@@ -38,9 +37,9 @@ const Main = () => {
   // 더보기 버튼
   const handleMore = () => {
     if (!selectedGroupId || selectedCategory == null) return;
-    if (page + 1 > totalPages) return;
-    const next = page + 1;
-    setPage(next);
+    if (uipage >= totalPages) return;
+    const next = uipage + 1;
+    dispatch(nextUiPage(next));
     dispatch(
       fetchBookmarks({
         groupId: selectedGroupId,

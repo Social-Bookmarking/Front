@@ -3,13 +3,9 @@ import { useAppDispatch, useAppSelector } from '../Util/hook';
 import { fetchBookmarks, reset, updateBookmark } from '../Util/bookmarkSlice';
 import { setBookMarkMapAdd } from '../Util/modalSlice';
 import SimpleBookmarkCard from '../Components/SimpleBookmarkCard';
-import { addBookmarkToMarker, removeMarker } from '../Util/bookmarkMarkerSlice';
 import { selectCategory, selectSelectedId } from '../Util/categorySlice';
 import toast from 'react-hot-toast';
-import {
-  clearBookmarkLocation,
-  addBookmarkToMap,
-} from '../Util/bookmarkMapSlice';
+import { bookmarkMapreset, fetchBookmarksMap } from '../Util/bookmarkMapSlice';
 
 const BookmarkMapAddModal = () => {
   const dispatch = useAppDispatch();
@@ -20,7 +16,6 @@ const BookmarkMapAddModal = () => {
   const selectedGroupId = useAppSelector(
     (state) => state.group.selectedGroupId
   );
-  const markers = useAppSelector((state) => state.bookmarkMarker.markers);
 
   const [page, setPage] = useState(0);
   const totalPages = useAppSelector((state) => state.bookmark.totalPages);
@@ -31,66 +26,31 @@ const BookmarkMapAddModal = () => {
   const handleSelect = async (bookmarkId: number) => {
     if (!context) return;
 
-    //현재 마커에 이미 북마크가 있으면 위치 삭제
-    const currentMarker = markers.find((m) => m.id === context.id);
-    if (currentMarker && currentMarker.bookmarks.length > 0) {
-      const prevBookmarkId = currentMarker.bookmarks[0];
-      if (prevBookmarkId !== bookmarkId) {
-        await dispatch(
-          updateBookmark({
-            bookmarkId: prevBookmarkId,
-            latitude: -1,
-            longitude: -1,
-          })
-        );
-        dispatch(clearBookmarkLocation(prevBookmarkId));
-      }
-    }
-
-    //북마크를 다른 마커로 이동
-    const prevMarker = markers.find((m) => m.bookmarks.includes(bookmarkId));
-    if (prevMarker) {
+    try {
       await dispatch(
         updateBookmark({
           bookmarkId,
-          latitude: -1,
-          longitude: -1,
-        })
-      );
-      dispatch(clearBookmarkLocation(bookmarkId));
-      dispatch(removeMarker(prevMarker.id));
-    }
-
-    // 마커에 추가
-    dispatch(
-      addBookmarkToMarker({
-        markerId: context.id,
-        bookmarkId,
-      })
-    );
-    // 위치 업데이트
-    await dispatch(
-      updateBookmark({
-        bookmarkId,
-        latitude: context.position.lat,
-        longitude: context.position.lng,
-      })
-    );
-
-    // 최신 지도 데이터 동기화
-    const newBookmark = bookmarks.find((b) => b.bookmarkId === bookmarkId);
-    if (newBookmark) {
-      dispatch(
-        addBookmarkToMap({
-          ...newBookmark,
           latitude: context.position.lat,
           longitude: context.position.lng,
         })
       );
-    }
 
-    toast.success('북마크 위치가 업데이트 되었습니다.');
-    dispatch(setBookMarkMapAdd({ open: false }));
+      dispatch(bookmarkMapreset());
+      await dispatch(
+        fetchBookmarksMap({
+          groupId: selectedGroupId,
+          categoryId: -1,
+          page: 0,
+          keyword: '',
+        })
+      );
+
+      toast.success('북마크가 추가되었습니다.');
+      dispatch(setBookMarkMapAdd({ open: false }));
+    } catch (err) {
+      console.log(err);
+      toast.error('추가에 실패했습니다.');
+    }
   };
 
   useEffect(() => {

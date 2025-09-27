@@ -7,11 +7,7 @@ import {
 import { Trash2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../Util/hook';
-import {
-  bookmarkMapreset,
-  clearBookmarkLocation,
-  fetchBookmarksMap,
-} from '../Util/bookmarkMapSlice';
+import { bookmarkMapreset, fetchBookmarksMap } from '../Util/bookmarkMapSlice';
 import { setBookMarkMapAdd } from '../Util/modalSlice';
 import SimpleBookmarkCard from './SimpleBookmarkCard';
 import BookmarkMapSearch from './BookmarkMapSearch';
@@ -20,9 +16,9 @@ import {
   addMarker,
   removeMarker,
   toggleOpen,
-  removeBookmarkFromMarker,
 } from '../Util/bookmarkMarkerSlice';
 import { updateBookmark } from '../Util/bookmarkSlice';
+import toast from 'react-hot-toast';
 
 interface Place {
   id: string;
@@ -42,6 +38,7 @@ const BookmarkMap = () => {
   );
   const markers = useAppSelector((state) => state.bookmarkMarker.markers);
   const openIds = useAppSelector((state) => state.bookmarkMarker.openIds);
+  const counter = useAppSelector((state) => state.bookmarkMarker.counter);
   const totalElements = useAppSelector(
     (state) => state.bookmarkMap.totalElements
   );
@@ -124,13 +121,6 @@ const BookmarkMap = () => {
     ps.keywordSearch(keyword, (data, status) => {
       if (status === kakao.maps.services.Status.OK) {
         setPlaces(data as Place[]);
-        // const bounds = new kakao.maps.LatLngBounds();
-        // for (let i = 0; i < data.length; i++) {
-        //   bounds.extend(
-        //     new kakao.maps.LatLng(Number(data[i].y), Number(data[i].x))
-        //   );
-        // }
-        // map.setBounds(bounds);
       } else {
         setPlaces([]);
       }
@@ -193,6 +183,33 @@ const BookmarkMap = () => {
       });
   };
 
+  const handleRemove = async (bookmarkId: number) => {
+    try {
+      await dispatch(
+        updateBookmark({
+          bookmarkId,
+          latitude: -1,
+          longitude: -1,
+        })
+      );
+
+      dispatch(bookmarkMapreset());
+      await dispatch(
+        fetchBookmarksMap({
+          groupId: selectedGroupId,
+          categoryId: -1,
+          page: 0,
+          keyword: '',
+        })
+      );
+
+      toast.success('북마크가 삭제되었습니다.');
+    } catch (err) {
+      console.log(err);
+      toast.error('삭제에 실패했습니다.');
+    }
+  };
+
   return (
     <div className="flex flex-col bg-gray-50">
       <div className="flex-1 p-6">
@@ -236,7 +253,7 @@ const BookmarkMap = () => {
           >
             {/* 마커 모달 */}
             <MarkerClusterer
-              key={markers.length + openIds.length}
+              key={counter + '-' + openIds.length}
               averageCenter={true}
               minLevel={3}
             >
@@ -285,24 +302,7 @@ const BookmarkMap = () => {
                                 <SimpleBookmarkCard {...b} />
                                 <button
                                   className="absolute top-2 right-2 text-red-500"
-                                  onClick={async () => {
-                                    await dispatch(
-                                      updateBookmark({
-                                        bookmarkId: b.bookmarkId,
-                                        latitude: -1,
-                                        longitude: -1,
-                                      })
-                                    );
-
-                                    dispatch(clearBookmarkLocation(bid));
-
-                                    dispatch(
-                                      removeBookmarkFromMarker({
-                                        markerId: m.id,
-                                        bookmarkId: bid,
-                                      })
-                                    );
-                                  }}
+                                  onClick={() => handleRemove(b.bookmarkId)}
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
@@ -333,15 +333,7 @@ const BookmarkMap = () => {
                             onClick={async () => {
                               if (m.bookmarks.length > 0) {
                                 const bid = m.bookmarks[0];
-
-                                await dispatch(
-                                  updateBookmark({
-                                    bookmarkId: bid,
-                                    latitude: -1,
-                                    longitude: -1,
-                                  })
-                                );
-                                dispatch(clearBookmarkLocation(bid));
+                                handleRemove(bid);
                               }
                               // 마커 제거
                               dispatch(removeMarker(m.id));
