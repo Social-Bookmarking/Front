@@ -47,6 +47,14 @@ const groupSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(fetchGroups.fulfilled, (state, action) => {
       state.groups = action.payload;
+
+      if (
+        state.selectedGroupId &&
+        action.payload.some((g) => g.teamId === state.selectedGroupId)
+      ) {
+        return;
+      }
+
       if (action.payload.length > 0) {
         state.selectedGroupId = action.payload[0].teamId;
       }

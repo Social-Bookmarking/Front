@@ -16,6 +16,9 @@ import {
   setGroupModify,
   setMyPage,
   setMemberManger,
+  setGroupParticipationModal,
+  setGroupDeleteModal,
+  setGroupExitModal,
 } from '../Util/modalSlice';
 import {
   Listbox,
@@ -59,7 +62,7 @@ const Header = () => {
               <ListboxOption
                 value="participation"
                 className="cursor-pointer text-sm select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
-                onClick={() => dispatch(setGroupAdd(true))}
+                onClick={() => dispatch(setGroupParticipationModal(true))}
               >
                 <LogIn className="w-4 h-4 text-violet-500" />
                 그룹 참가
@@ -83,6 +86,7 @@ const Header = () => {
               <ListboxOption
                 value="delete"
                 className="cursor-pointer text-sm select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
+                onClick={() => dispatch(setGroupDeleteModal(true))}
               >
                 <Trash2 className="w-4 h-4 text-violet-500" />
                 그룹 삭제
@@ -90,6 +94,7 @@ const Header = () => {
               <ListboxOption
                 value="exit"
                 className="cursor-pointer text-sm select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
+                onClick={() => dispatch(setGroupExitModal(true))}
               >
                 <LogOut className="w-4 h-4 text-violet-500" />
                 그룹 탈퇴

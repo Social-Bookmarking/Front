@@ -22,6 +22,9 @@ import { changePassword, fetchUserInfo, updateUserInfo } from '../Util/user';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import ConfirmBox from '../Components/ConfirmBox';
+import { fetchMembers } from '../Util/memberSlice';
+import { selectSelectedGroup } from '../Util/groupSlice';
+import { setMyPage } from '../Util/modalSlice';
 
 const MyPage = () => {
   const [tab, setTab] = useState<'profile' | 'security' | 'myBookmark'>(
@@ -33,6 +36,8 @@ const MyPage = () => {
   const [nickname, setNickname] = useState('');
   const [imageKey, setImageKey] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [isImageDeleted, setIsImageDeleted] = useState(false);
+  const selectedGroupId = useAppSelector(selectSelectedGroup);
 
   // 비밀번호 관련
   const [showCurrent, setShowCurrent] = useState(false);
@@ -61,6 +66,12 @@ const MyPage = () => {
   useEffect(() => {
     dispatch(fetchUserInfo());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (user.nickname) {
+      setNickname(user.nickname);
+    }
+  }, [user.nickname]);
 
   useEffect(() => {
     if (tab === 'myBookmark') {
@@ -112,7 +123,7 @@ const MyPage = () => {
         }
       );
 
-      const { presignedUrl, filekey } = res.data;
+      const { presignedUrl, fileKey } = res.data;
 
       // presigned URL에 PUT으로 업로드
       await axios.put(presignedUrl, file, {
@@ -120,7 +131,7 @@ const MyPage = () => {
       });
 
       // 성공하면 imageKey 업데이트
-      setImageKey(filekey);
+      setImageKey(fileKey);
     } catch (err) {
       console.log(err);
       toast.error('이미지 문제가 발생했습니다.');
@@ -149,8 +160,37 @@ const MyPage = () => {
   };
 
   const handleSaveProfile = () => {
-    dispatch(updateUserInfo({ nickname, imageKey }));
-    setPreviewUrl(null);
+    const payload: Partial<{ nickname: string; imageKey: string }> = {};
+
+    if (!nickname.trim()) {
+      toast.error('닉네임을 입력해주세요');
+      return;
+    }
+
+    payload.nickname = nickname.trim();
+
+    // 이미지가 새로 업로드 되었거나 삭제된 경우에만 보냄
+    if (imageKey) {
+      payload.imageKey = imageKey; // 새 이미지 키
+    } else if (isImageDeleted) {
+      payload.imageKey = '';
+    }
+
+    console.log(payload);
+
+    dispatch(updateUserInfo(payload))
+      .unwrap()
+      .then(() => {
+        dispatch(fetchUserInfo());
+        setPreviewUrl(null);
+        setImageKey('');
+        setIsImageDeleted(false);
+        if (selectedGroupId !== null) {
+          dispatch(fetchMembers(selectedGroupId));
+        }
+      });
+
+    dispatch(setMyPage(false));
   };
 
   const handleLogout = async () => {
@@ -162,9 +202,11 @@ const MyPage = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
+          withCredentials: true,
         }
       );
       localStorage.removeItem('token');
+      window.location.href = '/login';
     } catch (err) {
       console.error(err);
       toast.error('로그아웃 중 오류가 발생했습니다.');
@@ -179,7 +221,7 @@ const MyPage = () => {
         },
       });
       localStorage.removeItem('token');
-      toast.success('회원탈퇴 완료');
+      window.location.href = '/login';
     } catch (err) {
       console.error(err);
       toast.error('회원탈퇴 중 오류가 발생했습니다.');
@@ -196,7 +238,7 @@ const MyPage = () => {
         <div className="flex items-center gap-4">
           <Avatar
             name={user.nickname}
-            src={previewUrl || user.profileImageUrl}
+            src={user.profileImageUrl}
             avatarSize={10}
           />
           <div>
@@ -244,10 +286,27 @@ const MyPage = () => {
       {tab === 'profile' && (
         <>
           <div className="border-2 flex flex-col items-center border-[#E6E5F2] rounded-xl p-4 space-y-3">
+            {user.profileImageUrl && (
+              <button
+                className="mt-2 text-xs text-red-500 underline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPreviewUrl(null);
+                  setImageKey('');
+                  setIsImageDeleted(true);
+                }}
+              >
+                기본 이미지
+              </button>
+            )}
             <label className="cursor-pointer flex flex-col items-center space-y-3">
               <Avatar
                 name={user.nickname}
-                src={previewUrl || user.profileImageUrl}
+                src={
+                  isImageDeleted
+                    ? undefined
+                    : previewUrl || user.profileImageUrl
+                }
                 avatarSize={16}
               />
               <input
@@ -286,7 +345,6 @@ const MyPage = () => {
                   type="text"
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
-                  placeholder={user.nickname}
                   className="px-2 py-1 border border-[#E6E5F2] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                 />
               </div>

@@ -19,12 +19,13 @@ export const fetchUserInfo = createAsyncThunk<User>('user/fetch', async () => {
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   });
+  console.log(res);
   return res.data;
 });
 
 export const updateUserInfo = createAsyncThunk<
-  { nickname: string; imageKey: string },
-  { nickname: string; imageKey: string }
+  Partial<User>,
+  Partial<{ nickname: string; imageKey: string }>
 >('user/update', async (payload) => {
   await axios.patch('https://www.marksphere.link/api/me/profile', payload, {
     headers: {
@@ -61,18 +62,13 @@ const userSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder
-      .addCase(
-        fetchUserInfo.fulfilled,
-        (state, action: PayloadAction<User>) => {
-          state.nickname = action.payload.nickname;
-          state.profileImageUrl = action.payload.profileImageUrl;
-        }
-      )
-      .addCase(updateUserInfo.fulfilled, (state, action) => {
+    builder.addCase(
+      fetchUserInfo.fulfilled,
+      (state, action: PayloadAction<User>) => {
         state.nickname = action.payload.nickname;
-        state.profileImageUrl = action.payload.imageKey;
-      });
+        state.profileImageUrl = action.payload.profileImageUrl;
+      }
+    );
   },
 });
 

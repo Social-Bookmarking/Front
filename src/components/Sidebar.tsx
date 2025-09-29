@@ -27,6 +27,9 @@ import {
   setGroupAdd,
   setGroupModify,
   setMyPage,
+  setGroupParticipationModal,
+  setGroupDeleteModal,
+  setGroupExitModal,
 } from '../Util/modalSlice';
 import {
   fetchGroups,
@@ -35,6 +38,7 @@ import {
   changeGroup,
 } from '../Util/groupSlice';
 import { fetchMembers } from '../Util/memberSlice';
+import { fetchUserInfo } from '../Util/user';
 import {
   Listbox,
   ListboxButton,
@@ -56,9 +60,11 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
   const groups = useAppSelector(selectGroups);
   const selectedGroupId = useAppSelector(selectSelectedGroup);
   const selectedGroup = groups.find((g) => g.teamId === selectedGroupId);
+  const user = useAppSelector((state) => state.user);
 
   useEffect(() => {
     dispatch(fetchGroups());
+    dispatch(fetchUserInfo());
   }, [dispatch]);
 
   useEffect(() => {
@@ -71,10 +77,9 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
   return (
     <aside className="w-64 h-full p-4 border-r-2 border-[#E6E5F2] bg-[#fafafa] flex flex-col">
       <div className="flex border-b-2 border-[#E6E5F2] px-3 pb-3 items-center w-full mb-6">
-        <Avatar name={'김동천'} src={''} />
+        <Avatar name={user.nickname} src={user.profileImageUrl} />
         <div className="flex flex-col pl-3">
-          <p className="font-bold truncate">김동천</p>
-          <p className="text-sm truncate">dsky03@naver.com</p>
+          <p className="font-bold truncate">{user.nickname}</p>
         </div>
       </div>
       {/* 북마크스페이스 타이틀 */}
@@ -162,7 +167,7 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
               <ListboxOption
                 value="participation"
                 className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
-                onClick={() => dispatch(setGroupAdd(true))}
+                onClick={() => dispatch(setGroupParticipationModal(true))}
               >
                 <LogIn className="w-4 h-4 text-violet-500" />
                 그룹 참가
@@ -186,6 +191,7 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
               <ListboxOption
                 value="delete"
                 className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
+                onClick={() => dispatch(setGroupDeleteModal(true))}
               >
                 <Trash2 className="w-4 h-4 text-violet-500" />
                 그룹 삭제
@@ -193,6 +199,7 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
               <ListboxOption
                 value="exit"
                 className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
+                onClick={() => dispatch(setGroupExitModal(true))}
               >
                 <LogOut className="w-4 h-4 text-violet-500" />
                 그룹 탈퇴

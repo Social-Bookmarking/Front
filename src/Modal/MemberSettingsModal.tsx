@@ -3,7 +3,7 @@ import { Copy, RefreshCw, Trash2, ChevronDown, QrCode } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAppSelector, useAppDispatch } from '../Util/hook';
 import { setMemberManger, setQRcodeModal } from '../Util/modalSlice';
-import { changeRole } from '../Util/memberSlice';
+import { changeRole, fetchMembers } from '../Util/memberSlice';
 import Avatar from '../Components/Avatar';
 import {
   Listbox,
@@ -12,7 +12,7 @@ import {
   ListboxOptions,
 } from '@headlessui/react';
 import { selectSelectedGroup } from '../Util/groupSlice';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 import { useFloating, flip, shift, offset } from '@floating-ui/react';
 
@@ -24,7 +24,6 @@ const ROLE_LABEL: Record<Role, string> = {
   VIEWER: '뷰어',
 };
 
-// 각 컴포넌트 마다 훅 적용
 const MemberRow = ({
   member,
   onChangeRole,
@@ -57,49 +56,53 @@ const MemberRow = ({
           <div className="font-medium text-gray-900 truncate">
             {member.name}
           </div>
-          <div className="text-sm text-gray-500 truncate">
-            {member.email ?? '이메일 없음'}
-          </div>
         </div>
       </div>
 
       <div className="flex items-center gap-2 sm:justify-between">
         <div className="relative min-w-30">
-          <Listbox
-            value={member.permission}
-            onChange={(role: Role) => onChangeRole(member.userId, role)}
-            disabled={isOwner}
-          >
-            <ListboxButton
-              ref={refs.setReference}
-              className="w-full flex justify-between items-center h-10 rounded-lg border border-violet-300 bg-white px-3 text-left focus:outline-none focus:ring-2 focus:ring-violet-300"
+          {isOwner ? (
+            <div className="w-full flex justify-between items-center h-10 rounded-lg border border-violet-300 px-3 text-violet-500 cursor-default">
+              <span>{ROLE_LABEL[member.permission]}</span>
+            </div>
+          ) : (
+            <Listbox
+              value={member.permission}
+              onChange={(role: Role) => onChangeRole(member.userId, role)}
             >
-              <span className="truncate">{ROLE_LABEL[member.permission]}</span>
-              <ChevronDown className="w-4 h-4 text-gray-500" />
-            </ListboxButton>
+              <ListboxButton
+                ref={refs.setReference}
+                className="w-full flex justify-between items-center h-10 rounded-lg border border-violet-300 bg-white px-3 text-left focus:outline-none focus:ring-2 focus:ring-violet-300"
+              >
+                <span className="truncate">
+                  {ROLE_LABEL[member.permission]}
+                </span>
+                <ChevronDown className="w-4 h-4 text-gray-500" />
+              </ListboxButton>
 
-            <ListboxOptions
-              ref={refs.setFloating}
-              style={floatingStyles}
-              className="z-50 w-full rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none max-h-20 overflow-auto"
-            >
-              {(Object.keys(ROLE_LABEL) as Role[]).map((role) => (
-                <ListboxOption
-                  key={role}
-                  value={role}
-                  className="cursor-pointer select-none px-3 py-2 data-[focus]:bg-violet-50"
-                >
-                  {ROLE_LABEL[role]}
-                </ListboxOption>
-              ))}
-            </ListboxOptions>
-          </Listbox>
+              <ListboxOptions
+                ref={refs.setFloating}
+                style={floatingStyles}
+                className="z-50 w-full rounded-lg border border-violet-100 bg-white shadow-lg focus:outline-none max-h-20 overflow-auto"
+              >
+                {(Object.keys(ROLE_LABEL) as Role[]).map((role) => (
+                  <ListboxOption
+                    key={role}
+                    value={role}
+                    className="cursor-pointer select-none px-3 py-2 data-[focus]:bg-violet-50"
+                  >
+                    {ROLE_LABEL[role]}
+                  </ListboxOption>
+                ))}
+              </ListboxOptions>
+            </Listbox>
+          )}
         </div>
 
         <button
           onClick={() => onRemove(member.userId)}
           className={`p-2 rounded-lg ${
-            isOwner ? 'cursor-not-allowed opacity-30' : 'hover:bg-rose-50'
+            isOwner ? 'cursor-not-allowed opacity-50' : 'hover:bg-rose-50'
           }`}
           aria-label="멤버 삭제"
           disabled={isOwner}
@@ -175,8 +178,29 @@ const MemberSettingsModal = () => {
     dispatch(changeRole({ groupId, memberId: id, role }));
   };
 
-  const handleRemove = (id: number) => {
-    console.log('remove', id);
+  const handleRemove = async (id: number) => {
+    if (!groupId) return;
+    try {
+      await axios.delete(
+        `https://www.marksphere.link/api/groups/${groupId}/members/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      toast.success('멤버를 방출했습니다.');
+      dispatch(fetchMembers(groupId));
+    } catch (error) {
+      const err = error as AxiosError;
+      if (err.response?.status === 400) {
+        toast.error('자기 자신은 방출할 수 없습니다.');
+      } else if (err.response?.status === 404) {
+        toast.error('해당 멤버를 찾을 수 없습니다.');
+      } else {
+        toast.error('멤버 방출에 실패했습니다.');
+      }
+    }
   };
 
   return (

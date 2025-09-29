@@ -13,6 +13,9 @@ import GroupModifyModal from './Modal/GroupModifyModal';
 import CommentModal from './Modal/CommentModal';
 import MyPage from './Modal/MyPage';
 import QRCodeModal from './Modal/QRCodeModal';
+import GroupParticipation from './Modal/GroupParticipation';
+import GroupDeleteModal from './Modal/GroupDelete';
+import GroupExitModal from './Modal/GroupExit';
 
 import { useAppSelector, useAppDispatch } from './Util/hook';
 import {
@@ -25,6 +28,9 @@ import {
   setCommentModal,
   setMyPage,
   setQRcodeModal,
+  setGroupParticipationModal,
+  setGroupDeleteModal,
+  setGroupExitModal,
 } from './Util/modalSlice';
 import { useState, lazy, Suspense, useCallback, useEffect } from 'react';
 import AuthPage from './AuthPage';
@@ -47,6 +53,15 @@ function App() {
   const isCommentModal = useAppSelector((state) => state.modal.commentModal);
   const isMyPage = useAppSelector((state) => state.modal.myPage);
   const isQRCodeModal = useAppSelector((state) => state.modal.QRCodeModal);
+  const isGroupParticipation = useAppSelector(
+    (state) => state.modal.groupParticipationModal
+  );
+  const isGroupDeleteModal = useAppSelector(
+    (state) => state.modal.groupDeleteModal
+  );
+  const isGroupExitModal = useAppSelector(
+    (state) => state.modal.groupExitModal
+  );
 
   const dispatch = useAppDispatch();
 
@@ -157,6 +172,30 @@ function App() {
                   onClose={() => dispatch(setQRcodeModal(false))}
                 >
                   <QRCodeModal />
+                </Modal>
+
+                {/* 그룹 초대 모달 */}
+                <Modal
+                  isOpen={isGroupParticipation}
+                  onClose={() => dispatch(setGroupParticipationModal(false))}
+                >
+                  <GroupParticipation />
+                </Modal>
+
+                {/* 그룹 삭제 모달 */}
+                <Modal
+                  isOpen={isGroupDeleteModal}
+                  onClose={() => dispatch(setGroupDeleteModal(false))}
+                >
+                  <GroupDeleteModal />
+                </Modal>
+
+                {/* 그룹 탈퇴 모달 */}
+                <Modal
+                  isOpen={isGroupExitModal}
+                  onClose={() => dispatch(setGroupExitModal(false))}
+                >
+                  <GroupExitModal />
                 </Modal>
               </>
             ) : (

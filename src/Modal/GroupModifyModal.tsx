@@ -34,7 +34,7 @@ const GroupModifyModal = () => {
   };
 
   return (
-    <div className="w-[50vw] max-w-md rounded-2xl space-y-5 relative">
+    <div className="w-[50vw] max-w-md space-y-5 relative">
       <h2 className="text-lg font-semibold text-violet-600">그룹 수정</h2>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -33,6 +33,7 @@ export const fetchMembers = createAsyncThunk<Member[], number>(
         },
       }
     );
+    console.log(res);
     return res.data;
   }
 );

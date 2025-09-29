@@ -103,7 +103,9 @@ const BookmarkAddModal = () => {
         }
       );
       setOgInfo(res.data);
-      console.log(res.data);
+
+      setTitle(res.data.title || '');
+      setDescription(res.data.description || '');
     } catch (err) {
       console.error(err);
     } finally {
@@ -112,6 +114,17 @@ const BookmarkAddModal = () => {
   };
 
   const handleSave = async () => {
+    if (
+      !url ||
+      !title.trim() ||
+      !description.trim() ||
+      !categoryId ||
+      tagNames.length === 0
+    ) {
+      toast.error('모든 항목을 작성해야 합니다!');
+      return;
+    }
+
     try {
       await axios.post(
         `https://www.marksphere.link/api/groups/${groupId}/bookmarks`,
