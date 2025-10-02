@@ -1,17 +1,34 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../Util/hook';
 import { setGroupModify } from '../Util/modalSlice';
-import { selectSelectedGroup, fetchGroups } from '../Util/groupSlice';
+import {
+  selectSelectedGroup,
+  fetchGroups,
+  selectGroups,
+} from '../Util/groupSlice';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const GroupModifyModal = () => {
   const [groupName, setGroupName] = useState('');
   const [description, setDescription] = useState('');
+
   const dispatch = useAppDispatch();
   const groupId = useAppSelector(selectSelectedGroup);
+  const groups = useAppSelector(selectGroups);
+
+  const currentGroup = groups.find((g) => g.teamId === groupId);
+
+  useEffect(() => {
+    if (currentGroup) {
+      setGroupName(currentGroup.groupName);
+      setDescription(currentGroup.description ?? '');
+    }
+  }, [currentGroup]);
 
   const handleModify = async () => {
-    if (!groupName.trim()) return alert('그룹명을 입력해주세요.');
+    if (!groupName.trim()) return toast.error('그룹명을 입력해주세요.');
+
     try {
       const res = await axios.patch(
         `https://www.marksphere.link/api/groups/${groupId}`,

@@ -29,7 +29,7 @@ const SimpleBookmarkCard = ({
   const categoryName = categories.find((c) => c.id === categoryId)?.name;
 
   return (
-    <div className="group bg-[#fafafa] border-2 border-[#E6E5F2] rounded-2xl shadow-sm w-full min-w-[200px] max-w-[250px]">
+    <div className="group bg-[#fafafa] border-2 border-[#E6E5F2] rounded-2xl shadow-sm w-[220px]">
       <div className="relative overflow-hidden rounded-t-2xl">
         <img
           src={imageUrl}

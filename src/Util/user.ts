@@ -27,11 +27,23 @@ export const updateUserInfo = createAsyncThunk<
   Partial<User>,
   Partial<{ nickname: string; imageKey: string }>
 >('user/update', async (payload) => {
-  await axios.patch('https://www.marksphere.link/api/me/profile', payload, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
-    },
-  });
+  try {
+    await axios.patch('https://www.marksphere.link/api/me/profile', payload, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    toast.success('저장 성공!');
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const status = err.response?.status;
+      if (status === 400) {
+        toast.error('중복된 닉네임 입니다');
+      } else {
+        toast.error('저장에 문제가 발생했습니다');
+      }
+    }
+  }
   return payload;
 });
 

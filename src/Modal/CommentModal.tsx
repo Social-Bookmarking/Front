@@ -6,6 +6,7 @@ import {
   fetchReplies,
   deleteComment,
 } from '../Util/commentSlice';
+import Avatar from '../Components/Avatar';
 
 const CommentModal = () => {
   const dispatch = useAppDispatch();
@@ -47,12 +48,21 @@ const CommentModal = () => {
   const handleAddComment = () => {
     if (!input.trim() || bookmarkId === null) return;
 
+    const contentWithoutMention = replyTarget
+      ? input.replace(/^@\S+\s*/, '')
+      : input;
+
+    if (!contentWithoutMention.trim()) {
+      // mention만 있고 실제 내용 없으면 취소
+      return;
+    }
+
     if (replyTarget) {
       const isLastPage = !repliesState[replyTarget]?.hasNext;
       dispatch(
         addComment({
           bookmarkId,
-          content: input,
+          content: contentWithoutMention,
           parentId: replyTarget,
           rootCommentId: rootTarget,
           isLastPage,
@@ -100,6 +110,22 @@ const CommentModal = () => {
     );
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    if (replyTarget && input.startsWith('@')) {
+      const mention = input.split(' ')[0]; // 닉네임
+      if (!value.startsWith(mention)) {
+        setReplyTarget(null);
+        setRootTarget(undefined);
+        setInput(value.replace(/^@\S+\s?/, ''));
+        return;
+      }
+    }
+
+    setInput(value);
+  };
+
   return (
     <div className="w-[500px] h-[70vh] flex flex-col">
       <h2 className="text-lg font-semibold mb-3">댓글</h2>
@@ -108,9 +134,14 @@ const CommentModal = () => {
         {commentsState.data.map((c) => (
           <div key={c.commentId} className="space-y-2">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-violet-500 flex items-center justify-center text-white font-bold">
+              {/* <div className="w-10 h-10 rounded-full bg-violet-500 flex items-center justify-center text-white font-bold">
                 {c.author.nickname[0]}
-              </div>
+              </div> */}
+              <Avatar
+                name={c.author.nickname}
+                src={c.author.profileImageUrl}
+                avatarSize={10}
+              />
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">{c.author.nickname}</span>
@@ -166,9 +197,14 @@ const CommentModal = () => {
               <div className="pl-12 space-y-2">
                 {repliesState[c.commentId]?.data.map((r) => (
                   <div key={r.commentId} className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold text-sm">
+                    {/* <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold text-sm">
                       {r.author.nickname[0]}
-                    </div>
+                    </div> */}
+                    <Avatar
+                      name={r.author.nickname}
+                      src={r.author.profileImageUrl}
+                      avatarSize={8}
+                    />
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm">
@@ -198,7 +234,14 @@ const CommentModal = () => {
                           삭제
                         </button>
                       </div>
-                      <p className="text-sm">{r.content}</p>
+                      <p className="text-sm">
+                        {r.parentAuthorNickname && (
+                          <span className="text-violet-600 font-semibold">
+                            @{r.parentAuthorNickname}{' '}
+                          </span>
+                        )}
+                        {r.content}
+                      </p>
                       <button
                         className="text-xs text-gray-500 hover:underline mt-1"
                         onClick={() => {
@@ -249,7 +292,7 @@ const CommentModal = () => {
         <input
           type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={handleInputChange}
           placeholder="댓글 달기"
           className="flex-1 rounded-full border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
         />

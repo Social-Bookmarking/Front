@@ -72,6 +72,10 @@ const BookmarkCard = ({
     }
   };
 
+  const handleOpenNewTap = () => {
+    window.open(url, '_blank', 'noopener, noreferrer');
+  };
+
   return (
     <div className="group bg-[#fafafa] border-2 border-[#E6E5F2] rounded-2xl shadow-sm w-full min-w-[200px] max-w-[250px]">
       <div className="relative overflow-hidden rounded-t-2xl">
@@ -113,7 +117,10 @@ const BookmarkCard = ({
       </div>
       <div className="relative p-4 flex flex-col justify-between h-[150px]">
         <div>
-          <div className="flex items-start justify-between gap-2 mb-2">
+          <div
+            className="flex items-start justify-between gap-2 mb-2"
+            onClick={handleOpenNewTap}
+          >
             <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-violet-700">
               {title}
             </h3>

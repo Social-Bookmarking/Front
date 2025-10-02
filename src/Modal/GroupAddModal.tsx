@@ -3,6 +3,7 @@ import { useAppDispatch } from '../Util/hook';
 import { setGroupAdd } from '../Util/modalSlice';
 import { fetchGroups } from '../Util/groupSlice';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const GroupAddModal = () => {
   const [groupName, setGroupName] = useState('');
@@ -10,7 +11,8 @@ const GroupAddModal = () => {
   const dispatch = useAppDispatch();
 
   const handleSave = async () => {
-    if (!groupName.trim()) return alert('그룹명을 입력해주세요.');
+    if (!groupName.trim()) return toast.error('그룹명을 입력해주세요.');
+
     try {
       await axios.post(
         `https://www.marksphere.link/api/groups`,
@@ -21,6 +23,7 @@ const GroupAddModal = () => {
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Idempotency-Key': crypto.randomUUID(),
           },
         }
       );

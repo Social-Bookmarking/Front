@@ -46,6 +46,8 @@ import {
   ListboxOptions,
 } from '@headlessui/react';
 import Avatar from './Avatar';
+import { fetchGroupDetail } from '../Util/groupDetailSlice';
+import { differenceInHours, differenceInDays } from 'date-fns';
 
 type View = 'home' | 'map';
 interface SidebarProps {
@@ -61,6 +63,7 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
   const selectedGroupId = useAppSelector(selectSelectedGroup);
   const selectedGroup = groups.find((g) => g.teamId === selectedGroupId);
   const user = useAppSelector((state) => state.user);
+  const groupDetail = useAppSelector((state) => state.groupDetail.detail);
 
   useEffect(() => {
     dispatch(fetchGroups());
@@ -71,8 +74,22 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
     if (selectedGroupId) {
       dispatch(fetchMembers(selectedGroupId));
       dispatch(fetchCategories(selectedGroupId));
+      dispatch(fetchGroupDetail(selectedGroupId));
     }
   }, [dispatch, selectedGroupId]);
+
+  let deletionMessage: string | null = null;
+  if (
+    groupDetail?.status === 'PENDING_DELETION' &&
+    groupDetail.deletionScheduledAt
+  ) {
+    const targetDate = new Date(groupDetail.deletionScheduledAt);
+    const now = new Date();
+    const diffDays = differenceInDays(targetDate, now);
+    const diffHours = differenceInHours(targetDate, now) % 24;
+
+    deletionMessage = `삭제 예정: ${diffDays}일 ${diffHours}시간 남음`;
+  }
 
   return (
     <aside className="w-64 h-full p-4 border-r-2 border-[#E6E5F2] bg-[#fafafa] flex flex-col">
@@ -82,6 +99,11 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
           <p className="font-bold truncate">{user.nickname}</p>
         </div>
       </div>
+      {deletionMessage && (
+        <div className="mb-3 px-3 py-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+          {deletionMessage}
+        </div>
+      )}
       {/* 북마크스페이스 타이틀 */}
       <div className="mb-2">
         <Listbox

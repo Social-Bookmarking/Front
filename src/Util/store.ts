@@ -9,6 +9,8 @@ import bookmarkMapReducer from './bookmarkMapSlice';
 import userReducer from './user';
 import userBookmarkReducer from './userBookmarkSlice';
 import commentsReducer from './commentSlice';
+import inviteCodeReducer from './inviteCode';
+import groupDetailReducer from './groupDetailSlice';
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +24,8 @@ export const store = configureStore({
     group: groupReducer,
     userBookmark: userBookmarkReducer,
     comments: commentsReducer,
+    invitecode: inviteCodeReducer,
+    groupDetail: groupDetailReducer,
   },
 });
 

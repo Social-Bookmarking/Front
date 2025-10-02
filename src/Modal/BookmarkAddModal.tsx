@@ -88,7 +88,7 @@ const BookmarkAddModal = () => {
 
   const handleFetchOgInfo = async () => {
     if (!url || !isValidUrl(url)) {
-      alert('올바른 URL을 입력하세요!');
+      toast.error('올바른 URL을 입력하세요!');
       return;
     }
     setLoading(true);
@@ -114,14 +114,14 @@ const BookmarkAddModal = () => {
   };
 
   const handleSave = async () => {
-    if (
-      !url ||
-      !title.trim() ||
-      !description.trim() ||
-      !categoryId ||
-      tagNames.length === 0
-    ) {
-      toast.error('모든 항목을 작성해야 합니다!');
+    if (!url) {
+      toast.error('url이 없습니다');
+      return;
+    } else if (!title.trim()) {
+      toast.error('제목을 작성해주세요');
+      return;
+    } else if (!description.trim()) {
+      toast.error('설명을 작성해주세요');
       return;
     }
 
@@ -315,7 +315,10 @@ const BookmarkAddModal = () => {
 
           {/* 버튼 */}
           <div className="mt-6 flex justify-end gap-2">
-            <button className="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+            <button
+              className="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
+              onClick={() => dispatch(setBookMarkAdd(false))}
+            >
               취소
             </button>
             <button

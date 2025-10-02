@@ -24,7 +24,6 @@ import toast from 'react-hot-toast';
 import ConfirmBox from '../Components/ConfirmBox';
 import { fetchMembers } from '../Util/memberSlice';
 import { selectSelectedGroup } from '../Util/groupSlice';
-import { setMyPage } from '../Util/modalSlice';
 
 const MyPage = () => {
   const [tab, setTab] = useState<'profile' | 'security' | 'myBookmark'>(
@@ -132,6 +131,8 @@ const MyPage = () => {
 
       // 성공하면 imageKey 업데이트
       setImageKey(fileKey);
+      console.log(fileKey);
+      setIsImageDeleted(false);
     } catch (err) {
       console.log(err);
       toast.error('이미지 문제가 발생했습니다.');
@@ -167,7 +168,9 @@ const MyPage = () => {
       return;
     }
 
-    payload.nickname = nickname.trim();
+    if (user.nickname !== nickname.trim()) {
+      payload.nickname = nickname.trim();
+    }
 
     // 이미지가 새로 업로드 되었거나 삭제된 경우에만 보냄
     if (imageKey) {
@@ -190,7 +193,7 @@ const MyPage = () => {
         }
       });
 
-    dispatch(setMyPage(false));
+    // dispatch(setMyPage(false));
   };
 
   const handleLogout = async () => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Copy, RefreshCw, Trash2, ChevronDown, QrCode } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAppSelector, useAppDispatch } from '../Util/hook';
@@ -15,6 +15,7 @@ import { selectSelectedGroup } from '../Util/groupSlice';
 import axios, { AxiosError } from 'axios';
 
 import { useFloating, flip, shift, offset } from '@floating-ui/react';
+import { setInviteCode } from '../Util/inviteCode';
 
 type Role = 'ADMIN' | 'EDITOR' | 'VIEWER';
 
@@ -39,7 +40,7 @@ const MemberRow = ({
   };
   onChangeRole: (id: number, role: Role) => void;
   onRemove: (id: number) => void;
-  ownerId: number | null;
+  ownerId: number | undefined;
 }) => {
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom-start',
@@ -119,31 +120,10 @@ const MemberSettingsModal = () => {
   const members = useAppSelector((state) => state.member.memberList);
   const groupId = useAppSelector(selectSelectedGroup);
 
-  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const inviteCode = useAppSelector((state) => state.invitecode.inviteCode);
   const [loading, setLoading] = useState(false);
 
-  const [ownerId, setOwnerId] = useState<number | null>(null);
-
-  useEffect(() => {
-    const fetchGroupDetail = async () => {
-      if (!groupId) return;
-      try {
-        const res = await axios.get(
-          `https://www.marksphere.link/api/groups/${groupId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          }
-        );
-        setOwnerId(res.data.ownerId);
-      } catch (err) {
-        console.error('그룹 상세 조회 실패', err);
-      }
-    };
-
-    fetchGroupDetail();
-  }, [groupId]);
+  const ownerId = useAppSelector((state) => state.groupDetail.detail?.ownerId);
 
   const handleGenerateCode = async () => {
     if (!groupId) return;
@@ -158,7 +138,7 @@ const MemberSettingsModal = () => {
           },
         }
       );
-      setInviteCode(res.data.code);
+      dispatch(setInviteCode(res.data.code));
     } catch (err) {
       console.error('초대 코드 생성 실패', err);
       toast.error('오류 발생');
@@ -204,7 +184,7 @@ const MemberSettingsModal = () => {
   };
 
   return (
-    <div className="w-[50vw]">
+    <div className="w-[60vw]">
       {/* 헤더 */}
       <div className="flex items-start justify-between mb-2">
         <div>
