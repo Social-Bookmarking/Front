@@ -19,7 +19,6 @@ export const fetchUserInfo = createAsyncThunk<User>('user/fetch', async () => {
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   });
-  console.log(res);
   return res.data;
 });
 

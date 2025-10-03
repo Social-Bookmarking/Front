@@ -64,7 +64,6 @@ export const fetchBookmarks = createAsyncThunk<
     categoryId = null;
   }
 
-  console.log('북마크 보내는 페이지', page);
   const { data } = await axios.get<PageResponse<Bookmark>>(
     `https://www.marksphere.link/api/groups/${groupId}/bookmarks`,
     {
@@ -74,15 +73,15 @@ export const fetchBookmarks = createAsyncThunk<
       },
     }
   );
-  console.log('북마크', data);
+  console.log(data);
   return data;
 });
 
 export const updateBookmark = createAsyncThunk<
-  Bookmark,
-  Partial<Bookmark> & { bookmarkId: number }
+  Partial<Bookmark> & { bookmarkId: number; tagNames?: string[] },
+  Partial<Bookmark> & { bookmarkId: number; tagNames?: string[] }
 >('bookmarks/update', async ({ bookmarkId, ...updates }) => {
-  const { data } = await axios.patch<Bookmark>(
+  await axios.patch(
     `https://www.marksphere.link/api/bookmarks/${bookmarkId}`,
     updates,
     {
@@ -91,8 +90,8 @@ export const updateBookmark = createAsyncThunk<
       },
     }
   );
-  console.log(data);
-  return data;
+  // 서버는 응답을 안 주므로, 우리가 보낸 값 그대로 반환
+  return { bookmarkId, ...updates };
 });
 
 export const deleteBookmark = createAsyncThunk<
@@ -158,11 +157,17 @@ const bookmarkSlice = createSlice({
         );
       })
       .addCase(updateBookmark.fulfilled, (state, action) => {
-        const { bookmarkId, latitude, longitude } = action.payload;
+        const { bookmarkId, tagNames, ...updates } = action.payload;
         const target = state.items.find((b) => b.bookmarkId === bookmarkId);
         if (target) {
-          target.latitude = latitude;
-          target.longitude = longitude;
+          Object.assign(target, updates);
+          let count = 0;
+          if (tagNames) {
+            target.tags = tagNames.map((name) => ({
+              tagId: count++,
+              tagName: name,
+            }));
+          }
         }
       });
   },

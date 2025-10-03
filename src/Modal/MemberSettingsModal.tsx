@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Copy, RefreshCw, Trash2, ChevronDown, QrCode } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAppSelector, useAppDispatch } from '../Util/hook';
@@ -124,6 +124,23 @@ const MemberSettingsModal = () => {
   const [loading, setLoading] = useState(false);
 
   const ownerId = useAppSelector((state) => state.groupDetail.detail?.ownerId);
+
+  useEffect(() => {
+    const fetchInviteCode = async () => {
+      const inviteRes = await axios.get<{ code: string }>(
+        `https://www.marksphere.link/api/groups/${groupId}/invite-code`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      if (inviteRes.data.code) {
+        dispatch(setInviteCode(inviteRes.data.code));
+      }
+    };
+    fetchInviteCode();
+  }, [groupId, dispatch]);
 
   const handleGenerateCode = async () => {
     if (!groupId) return;

@@ -75,6 +75,11 @@ const bookmarkMarkerSlice = createSlice({
         marker.bookmarks = marker.bookmarks.filter((id) => id !== bookmarkId);
       }
     },
+    resetMarkers: (state) => {
+      state.markers = [];
+      state.counter = 1;
+      state.openIds = [];
+    },
   },
 });
 
@@ -85,6 +90,7 @@ export const {
   toggleOpen,
   addBookmarkToMarker,
   removeBookmarkFromMarker,
+  resetMarkers,
 } = bookmarkMarkerSlice.actions;
 
 export default bookmarkMarkerSlice.reducer;

@@ -66,7 +66,7 @@ const BookmarkAddModal = () => {
       if (document.visibilityState === 'visible' && !url) {
         const hasPermission = await checkClipboardPermission();
         if (!hasPermission) {
-          console.log('권한 없음');
+          toast.error('권한 없음');
           return;
         }
         try {
@@ -75,7 +75,7 @@ const BookmarkAddModal = () => {
           const parsed = new URL(text);
           setUrl(parsed.href);
         } catch {
-          console.log('클립보드에 URL 없음');
+          toast.error('클립보드에 URL 없음');
         }
       }
     };
@@ -126,6 +126,7 @@ const BookmarkAddModal = () => {
     }
 
     try {
+      console.log(tagNames);
       await axios.post(
         `https://www.marksphere.link/api/groups/${groupId}/bookmarks`,
         {

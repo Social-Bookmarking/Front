@@ -29,7 +29,6 @@ export const fetchGroupDetail = createAsyncThunk<GroupDetail, number>(
         },
       }
     );
-    console.log(data);
     return data;
   }
 );

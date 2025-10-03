@@ -16,6 +16,7 @@ import {
   addMarker,
   removeMarker,
   toggleOpen,
+  resetMarkers,
 } from '../Util/bookmarkMarkerSlice';
 import { updateBookmark } from '../Util/bookmarkSlice';
 import toast from 'react-hot-toast';
@@ -48,7 +49,12 @@ const BookmarkMap = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
 
   useEffect(() => {
+    if (!selectedGroupId) return;
+
+    dispatch(bookmarkMapreset());
+    dispatch(resetMarkers());
     setPage(1);
+
     dispatch(
       fetchBookmarksMap({
         groupId: selectedGroupId,

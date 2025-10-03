@@ -537,7 +537,7 @@ const MyPage = () => {
                     }}
                   >
                     {liked.items.map((b) => (
-                      <div key={b.bookmarkId} className="w-[200px]">
+                      <div key={b.bookmarkId}>
                         <SimpleBookmarkCard {...b} />
                       </div>
                     ))}

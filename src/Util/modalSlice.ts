@@ -25,6 +25,8 @@ interface modalState {
   groupParticipationModal: boolean;
   groupDeleteModal: boolean;
   groupExitModal: boolean;
+  bookmarkModifyModal: boolean;
+  bookmarkModifybookmarkId: number | null;
 }
 
 const initialState: modalState = {
@@ -42,6 +44,8 @@ const initialState: modalState = {
   groupParticipationModal: false,
   groupDeleteModal: false,
   groupExitModal: false,
+  bookmarkModifyModal: false,
+  bookmarkModifybookmarkId: null,
 };
 
 const modalSlice = createSlice({
@@ -96,6 +100,15 @@ const modalSlice = createSlice({
     setGroupExitModal: (state, action: PayloadAction<boolean>) => {
       state.groupExitModal = action.payload;
     },
+    setBookMarkModifyModal: (
+      state,
+      action: PayloadAction<{ open: boolean; bookmardId?: number }>
+    ) => {
+      state.bookmarkModifyModal = action.payload.open;
+      state.bookmarkModifybookmarkId = action.payload.open
+        ? action.payload.bookmardId ?? null
+        : null;
+    },
   },
 });
 
@@ -112,5 +125,6 @@ export const {
   setGroupParticipationModal,
   setGroupDeleteModal,
   setGroupExitModal,
+  setBookMarkModifyModal,
 } = modalSlice.actions;
 export default modalSlice.reducer;

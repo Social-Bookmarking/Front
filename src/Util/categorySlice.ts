@@ -28,7 +28,6 @@ export const fetchCategories = createAsyncThunk<Category[], number | null>(
         },
       }
     );
-    console.log(res.data);
     return res.data;
   }
 );

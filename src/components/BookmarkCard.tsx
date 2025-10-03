@@ -1,8 +1,14 @@
-import { Heart, ExternalLink, Trash2, MessageCircleMore } from 'lucide-react';
+import {
+  Heart,
+  ExternalLink,
+  Trash2,
+  MessageCircleMore,
+  Pencil,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../Util/hook';
 import { selectCategories } from '../Util/categorySlice';
-import { setCommentModal } from '../Util/modalSlice';
+import { setBookMarkModifyModal, setCommentModal } from '../Util/modalSlice';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { deleteBookmark } from '../Util/bookmarkSlice';
@@ -103,9 +109,17 @@ const BookmarkCard = ({
           {categoryName}
         </span>
         <MessageCircleMore
-          className="absolute text-gray-400 w-4 h-4 bottom-3 right-10 hover:text-violet-700"
+          className="absolute text-gray-400 w-4 h-4 bottom-3 right-15 hover:text-violet-700"
           onClick={() =>
             dispatch(setCommentModal({ open: true, bookmarkId: bookmarkId }))
+          }
+        />
+        <Pencil
+          className="absolute text-gray-400 w-4 h-4 bottom-3 right-9 hover:text-violet-700"
+          onClick={() =>
+            dispatch(
+              setBookMarkModifyModal({ open: true, bookmardId: bookmarkId })
+            )
           }
         />
         <Trash2
