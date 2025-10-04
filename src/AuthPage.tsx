@@ -24,6 +24,7 @@ const AuthPage = () => {
   //       );
   //       localStorage.setItem('token', res.data.accessToken);
   //       window.dispatchEvent(new Event('storage'));
+  //       window.dispatchEvent(new Event('reload-loading'));
   //       navigate('/');
   //     } catch (err) {
   //       console.error('axios 에러:', err);
@@ -62,6 +63,7 @@ const AuthPage = () => {
 
         localStorage.setItem('token', res.data.accessToken);
         window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new Event('reload-loading'));
         navigate('/');
       } catch (err) {
         console.error('axios 에러:', err);

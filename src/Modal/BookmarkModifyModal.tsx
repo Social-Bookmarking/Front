@@ -11,6 +11,8 @@ import { fetchCategories, selectCategories } from '../Util/categorySlice';
 import { useEffect, useState } from 'react';
 import { updateBookmark } from '../Util/bookmarkSlice';
 import { setBookMarkModifyModal } from '../Util/modalSlice';
+import axios from 'axios';
+import default_image from '../assets/img/default/default_image.png';
 
 const BookmarkModifyModal = () => {
   const dispatch = useAppDispatch();
@@ -32,6 +34,11 @@ const BookmarkModifyModal = () => {
   const [tagInput, setTagInput] = useState('');
   const [categoryId, setCategoryId] = useState<number | null>(null);
 
+  // 이미지
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [imageKey, setImageKey] = useState('');
+  const [uploading, setUploading] = useState(false);
+
   useEffect(() => {
     if (bookmark) {
       setTitle(bookmark.title);
@@ -39,8 +46,76 @@ const BookmarkModifyModal = () => {
       setTagNames(bookmark.tags.map((t) => t.tagName));
       setTagInput(bookmark.tags.map((t) => t.tagName).join(', '));
       setCategoryId(bookmark.categoryId);
+      setPreviewUrl(bookmark.imageUrl || null);
     }
   }, [bookmark]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+
+    try {
+      setUploading(true);
+      setPreviewUrl(URL.createObjectURL(file));
+
+      const res = await axios.get(
+        `https://www.marksphere.link/api/me/profile/upload-url`,
+        {
+          params: { fileName: file.name },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      const { presignedUrl, fileKey } = res.data;
+
+      await axios.put(presignedUrl, file, {
+        headers: { 'Content-Type': file.type },
+      });
+
+      setImageKey(fileKey);
+    } catch (err) {
+      console.error(err);
+      toast.error('이미지 업로드 중 문제가 발생했습니다.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleResetImage = async () => {
+    try {
+      setUploading(true);
+
+      const response = await fetch(default_image);
+      const blob = await response.blob();
+      const defaultFile = new File([blob], 'default_image.png', {
+        type: blob.type || 'image/png',
+      });
+
+      const res = await axios.get(
+        `https://www.marksphere.link/api/me/profile/upload-url`,
+        {
+          params: { fileName: defaultFile.name },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      const { presignedUrl, fileKey } = res.data;
+
+      await axios.put(presignedUrl, defaultFile, {
+        headers: { 'Content-Type': defaultFile.type },
+      });
+
+      setImageKey(fileKey);
+      setPreviewUrl(default_image);
+    } catch (err) {
+      console.error(err);
+      toast.error('기본 이미지로 변경 중 오류가 발생했습니다.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!bookmarkId || !bookmark) return;
@@ -51,6 +126,8 @@ const BookmarkModifyModal = () => {
       description?: string;
       categoryId?: number;
       tagNames?: string[];
+      imageKey?: string;
+      previewUrl?: string;
     } = { bookmarkId };
 
     if (title.trim() === '') {
@@ -68,6 +145,10 @@ const BookmarkModifyModal = () => {
     ) {
       console.log(tagNames);
       updates.tagNames = tagNames;
+    }
+    if (imageKey) {
+      updates.imageKey = imageKey;
+      updates.previewUrl = previewUrl || '';
     }
 
     try {
@@ -95,13 +176,42 @@ const BookmarkModifyModal = () => {
         📌 북마크 수정
       </h2>
       <div className="mt-4 space-y-4 p-1 h-[400px]">
-        {bookmark.imageUrl && (
-          <img
-            src={bookmark.imageUrl}
-            alt={bookmark.title}
-            className="w-full h-40 object-cover rounded-lg"
-          />
-        )}
+        {/* 이미지 업로드 */}
+        <div className="flex flex-col items-center border-2 border-[#E6E5F2] rounded-lg p-3 space-y-3">
+          <label className="cursor-pointer flex flex-col items-center space-y-3">
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="미리보기"
+                className="w-full h-40 object-cover rounded-lg"
+              />
+            ) : (
+              <div className="w-full h-40 flex items-center justify-center bg-gray-100 text-gray-400 rounded-lg">
+                기본 이미지
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <p className="text-sm text-gray-500">
+              이미지를 클릭하여 변경하세요
+            </p>
+          </label>
+
+          {previewUrl && (
+            <button
+              onClick={handleResetImage}
+              className="text-xs text-red-500 hover:underline"
+            >
+              기본 이미지
+            </button>
+          )}
+
+          {uploading && <p className="text-xs text-gray-400">업로드 중...</p>}
+        </div>
 
         {/* 제목 */}
         <div>

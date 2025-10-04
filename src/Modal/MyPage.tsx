@@ -105,8 +105,6 @@ const MyPage = () => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
 
-    console.log(file.name, file.type);
-
     try {
       setUploading(true);
 
