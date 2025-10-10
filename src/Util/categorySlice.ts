@@ -83,6 +83,26 @@ export const deleteCategory = createAsyncThunk(
   }
 );
 
+// 순서 바꾸기
+export const updateCategoryOrder = createAsyncThunk(
+  'categories/updateOrder',
+  async (payload: {
+    groupId: number;
+    ordered: { categoryId: number; position: number }[];
+  }) => {
+    const res = await axios.patch<Category[]>(
+      `https://www.marksphere.link/api/groups/${payload.groupId}/categories/order`,
+      payload.ordered,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    );
+    return res.data;
+  }
+);
+
 const categoriesSlice = createSlice({
   name: 'categories',
   initialState,

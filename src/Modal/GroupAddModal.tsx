@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAppDispatch } from '../Util/hook';
 import { setGroupAdd } from '../Util/modalSlice';
 import { fetchGroups } from '../Util/groupSlice';
@@ -9,6 +9,7 @@ const GroupAddModal = () => {
   const [groupName, setGroupName] = useState('');
   const [description, setDescription] = useState('');
   const dispatch = useAppDispatch();
+  const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
 
   const handleSave = async () => {
     if (!groupName.trim()) return toast.error('그룹명을 입력해주세요.');
@@ -23,7 +24,7 @@ const GroupAddModal = () => {
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Idempotency-Key': crypto.randomUUID(),
+            'Idempotency-Key': idempotencyKeyRef.current,
           },
         }
       );

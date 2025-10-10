@@ -78,15 +78,15 @@ function App() {
   );
   const handleNavigate = useCallback((next: View) => setView(next), []);
 
-  // 최소 3초 로딩 화면
+  // 최소 5초 로딩 화면
   useEffect(() => {
     const showLoading = () => {
       setLoading(true);
-      const timer = setTimeout(() => setLoading(false), 3000);
+      const timer = setTimeout(() => setLoading(false), 5000);
       return () => clearTimeout(timer);
     };
 
-    const timer = setTimeout(() => setLoading(false), 3000);
+    const timer = setTimeout(() => setLoading(false), 5000);
     window.addEventListener('reload-loading', showLoading);
 
     return () => {

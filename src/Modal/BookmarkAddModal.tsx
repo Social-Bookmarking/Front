@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, Check, ChevronDown } from 'lucide-react';
 import { selectSelectedGroup } from '../Util/groupSlice';
 import { useAppDispatch, useAppSelector } from '../Util/hook';
@@ -17,6 +17,7 @@ import {
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { fetchBookmarks, reset } from '../Util/bookmarkSlice';
+import default_image from '../assets/img/default/default_image.png';
 
 interface OgInfo {
   title: string;
@@ -33,10 +34,44 @@ const BookmarkAddModal = () => {
   const [description, setDescription] = useState('');
   const [tagNames, setTagNames] = useState<string[]>([]);
   const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [imageKey, setImageKey] = useState<string>('');
 
   const groupId = useAppSelector(selectSelectedGroup);
   const categories = useAppSelector(selectCategories);
   const dispatch = useAppDispatch();
+
+  const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
+
+  const uploadDefaultImage = async (): Promise<string | null> => {
+    try {
+      const response = await fetch(default_image);
+      const blob = await response.blob();
+      const defaultFile = new File([blob], 'default_image.png', {
+        type: blob.type || 'image/png',
+      });
+
+      const res = await axios.get(
+        `https://www.marksphere.link/api/me/profile/upload-url`,
+        {
+          params: { fileName: defaultFile.name },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+
+      const { presignedUrl, fileKey } = res.data;
+      await axios.put(presignedUrl, defaultFile, {
+        headers: { 'Content-Type': defaultFile.type },
+      });
+
+      return fileKey;
+    } catch (err) {
+      console.error('기본 이미지 업로드 오류:', err);
+      toast.error('기본 이미지 업로드 중 오류가 발생했습니다.');
+      return null;
+    }
+  };
 
   // 클립보드 권한 확인
   const checkClipboardPermission = async () => {
@@ -102,12 +137,43 @@ const BookmarkAddModal = () => {
           },
         }
       );
-      setOgInfo(res.data);
 
-      setTitle(res.data.title || '');
-      setDescription(res.data.description || '');
+      const data = res.data;
+
+      // OG 요청 성공했지만 image가 null 또는 ''일 때
+      if (!data.image || data.image.trim() === '') {
+        const defaultKey = await uploadDefaultImage();
+        if (defaultKey) {
+          setImageKey(defaultKey);
+          setOgInfo({
+            title: data.title ?? '',
+            description: data.description ?? '',
+            image: default_image,
+          });
+        }
+      } else {
+        setOgInfo(data);
+        setImageKey(''); // og 이미지 직접 사용할 경우 imageKey 비움
+      }
+
+      setTitle(data.title || '');
+      setDescription(data.description || '');
     } catch (err) {
       console.error(err);
+
+      if (axios.isAxiosError(err) && err.response?.status === 500) {
+        const defaultKey = await uploadDefaultImage();
+        if (defaultKey) {
+          setImageKey(defaultKey);
+          setOgInfo({
+            title: '',
+            description: '',
+            image: default_image,
+          });
+        }
+      } else {
+        toast.error('OG 정보 추출 중 오류가 발생했습니다.');
+      }
     } finally {
       setLoading(false);
     }
@@ -137,14 +203,14 @@ const BookmarkAddModal = () => {
           tagNames,
           // latitude: 0,
           // longitude: 0,
-          imageKey: '',
+          imageKey,
           originalImageUrl: ogInfo?.image ?? '',
         },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
             //멱등성 보장 -> uuid 자동 생성
-            'Idempotency-Key': crypto.randomUUID(),
+            'Idempotency-Key': idempotencyKeyRef.current,
           },
         }
       );

@@ -7,6 +7,7 @@ import {
   deleteComment,
 } from '../Util/commentSlice';
 import Avatar from '../Components/Avatar';
+import toast from 'react-hot-toast';
 
 const CommentModal = () => {
   const dispatch = useAppDispatch();
@@ -23,6 +24,7 @@ const CommentModal = () => {
   );
 
   const [input, setInput] = useState('');
+  const [sending, setSending] = useState(false);
   const [showReplies, setShowReplies] = useState<Record<number, boolean>>({});
   const [replyTarget, setReplyTarget] = useState<number | null>(null);
   const [rootTarget, setRootTarget] = useState<number | undefined>(undefined);
@@ -45,8 +47,11 @@ const CommentModal = () => {
   };
 
   // 댓글/답글 추가
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!input.trim() || bookmarkId === null) return;
+    if (sending) return;
+
+    setSending(true);
 
     const contentWithoutMention = replyTarget
       ? input.replace(/^@\S+\s*/, '')
@@ -54,36 +59,44 @@ const CommentModal = () => {
 
     if (!contentWithoutMention.trim()) {
       // mention만 있고 실제 내용 없으면 취소
+      setSending(false);
       return;
     }
 
-    if (replyTarget) {
-      const isLastPage = !repliesState[replyTarget]?.hasNext;
-      dispatch(
-        addComment({
-          bookmarkId,
-          content: contentWithoutMention,
-          parentId: replyTarget,
-          rootCommentId: rootTarget,
-          isLastPage,
-        })
-      );
-      setShowReplies((prev) => ({ ...prev, [replyTarget]: true }));
-      setReplyTarget(null); // 초기화
-    } else {
-      const isLastPage = !commentsState.hasNext;
-      dispatch(
-        addComment({
-          bookmarkId,
-          content: input,
-          parentId: null,
-          rootCommentId: undefined,
-          isLastPage,
-        })
-      );
-    }
+    try {
+      if (replyTarget) {
+        const isLastPage = !repliesState[replyTarget]?.hasNext;
+        await dispatch(
+          addComment({
+            bookmarkId,
+            content: contentWithoutMention,
+            parentId: replyTarget,
+            rootCommentId: rootTarget,
+            isLastPage,
+          })
+        );
+        setShowReplies((prev) => ({ ...prev, [replyTarget]: true }));
+        setReplyTarget(null); // 초기화
+      } else {
+        const isLastPage = !commentsState.hasNext;
+        await dispatch(
+          addComment({
+            bookmarkId,
+            content: input,
+            parentId: null,
+            rootCommentId: undefined,
+            isLastPage,
+          })
+        );
+      }
 
-    setInput('');
+      setInput('');
+    } catch (error) {
+      console.error(error);
+      toast.error('댓글 등록 실패');
+    } finally {
+      setSending(false);
+    }
   };
 
   // 댓글 더보기
@@ -298,9 +311,10 @@ const CommentModal = () => {
         />
         <button
           onClick={() => handleAddComment()}
+          disabled={sending}
           className="px-4 py-2 bg-violet-500 text-white rounded-full text-sm hover:bg-violet-600"
         >
-          등록
+          {sending ? '등록 중...' : '등록'}
         </button>
       </div>
     </div>
