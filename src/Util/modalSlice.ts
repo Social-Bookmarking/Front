@@ -27,6 +27,13 @@ interface modalState {
   groupExitModal: boolean;
   bookmarkModifyModal: boolean;
   bookmarkModifybookmarkId: number | null;
+  // 회원탈퇴할 때 소유자 이전
+  ownershipTransferModal: boolean;
+  ownershipTransferContext: {
+    groups: { groupId: number; groupName: string }[];
+    currentIndex: number;
+  };
+  groupOwnershipTransperModal: boolean;
 }
 
 const initialState: modalState = {
@@ -46,6 +53,9 @@ const initialState: modalState = {
   groupExitModal: false,
   bookmarkModifyModal: false,
   bookmarkModifybookmarkId: null,
+  ownershipTransferModal: false,
+  ownershipTransferContext: { groups: [], currentIndex: 0 },
+  groupOwnershipTransperModal: false,
 };
 
 const modalSlice = createSlice({
@@ -109,6 +119,29 @@ const modalSlice = createSlice({
         ? action.payload.bookmardId ?? null
         : null;
     },
+    setOwnershipTransferModal: (
+      state,
+      action: PayloadAction<{
+        open: boolean;
+        groups?: { groupId: number; groupName: string }[];
+      }>
+    ) => {
+      state.ownershipTransferModal = action.payload.open;
+      if (action.payload.open && action.payload.groups) {
+        state.ownershipTransferContext = {
+          groups: action.payload.groups,
+          currentIndex: 0,
+        };
+      } else {
+        state.ownershipTransferContext = { groups: [], currentIndex: 0 };
+      }
+    },
+    nextOwnershipTransferGroup: (state) => {
+      state.ownershipTransferContext.currentIndex += 1;
+    },
+    setGroupOwnershipTransferModal: (state, action: PayloadAction<boolean>) => {
+      state.groupOwnershipTransperModal = action.payload;
+    },
   },
 });
 
@@ -126,5 +159,8 @@ export const {
   setGroupDeleteModal,
   setGroupExitModal,
   setBookMarkModifyModal,
+  setOwnershipTransferModal,
+  nextOwnershipTransferGroup,
+  setGroupOwnershipTransferModal,
 } = modalSlice.actions;
 export default modalSlice.reducer;

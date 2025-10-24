@@ -7,13 +7,17 @@ import {
   selectGroups,
   selectSelectedGroup,
 } from '../Util/groupSlice';
-import { setGroupExitModal } from '../Util/modalSlice';
+import {
+  setGroupExitModal,
+  setGroupOwnershipTransferModal,
+} from '../Util/modalSlice';
 
 const GroupExitModal = () => {
   const dispatch = useAppDispatch();
   const groups = useAppSelector(selectGroups);
   const selectedGroupId = useAppSelector(selectSelectedGroup);
   const selectedGroup = groups.find((g) => g.teamId === selectedGroupId);
+  const members = useAppSelector((state) => state.member.memberList);
 
   const [loading, setLoading] = useState(false);
 
@@ -37,6 +41,14 @@ const GroupExitModal = () => {
         toast.error('마지막 남은 관리자는 탈퇴할 수 없습니다.');
       } else if (err.response?.status === 404) {
         toast.error('그룹 또는 멤버를 찾을 수 없습니다.');
+      } else if (err.response?.status === 409) {
+        if (members.length <= 1) {
+          toast.error(
+            '그룹에 현재 한 명만 있습니다. \n 탈퇴 대신 그룹 삭제를 해주세요.'
+          );
+          return;
+        }
+        dispatch(setGroupOwnershipTransferModal(true));
       } else {
         toast.error('그룹 탈퇴에 실패했습니다.');
       }

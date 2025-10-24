@@ -24,6 +24,7 @@ import toast from 'react-hot-toast';
 import ConfirmBox from '../Components/ConfirmBox';
 import { fetchMembers } from '../Util/memberSlice';
 import { selectSelectedGroup } from '../Util/groupSlice';
+import { setOwnershipTransferModal } from '../Util/modalSlice';
 
 const MyPage = () => {
   const [tab, setTab] = useState<'profile' | 'security' | 'myBookmark'>(
@@ -224,8 +225,18 @@ const MyPage = () => {
       localStorage.removeItem('token');
       window.location.href = '/login';
     } catch (err) {
-      console.error(err);
-      toast.error('회원탈퇴 중 오류가 발생했습니다.');
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        const { requiredActionGroups } = err.response.data;
+        dispatch(
+          setOwnershipTransferModal({
+            open: true,
+            groups: requiredActionGroups || [],
+          })
+        );
+      } else {
+        console.error(err);
+        toast.error('회원탈퇴 중 오류가 발생했습니다.');
+      }
     }
   };
 

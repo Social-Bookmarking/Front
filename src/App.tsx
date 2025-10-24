@@ -18,6 +18,7 @@ import GroupParticipation from './Modal/GroupParticipation';
 import GroupDeleteModal from './Modal/GroupDelete';
 import GroupExitModal from './Modal/GroupExit';
 import BookmarkModifyModal from './Modal/BookmarkModifyModal';
+import OwnershipTransferModal from './Modal/OwnershipTransferModal';
 
 import { useAppSelector, useAppDispatch } from './Util/hook';
 import {
@@ -34,9 +35,12 @@ import {
   setGroupDeleteModal,
   setGroupExitModal,
   setBookMarkModifyModal,
+  setOwnershipTransferModal,
+  setGroupOwnershipTransferModal,
 } from './Util/modalSlice';
 import { useState, lazy, Suspense, useCallback, useEffect } from 'react';
 import AuthPage from './AuthPage';
+import GroupOwnershipTransferModal from './Modal/GroupOwnershipTransferModal';
 
 // 동적 import() 지도가 로딩에 많은 영향을 줌
 const Main = lazy(() => import('./Components/Main'));
@@ -67,6 +71,12 @@ function App() {
   );
   const isBookmarkModifyModal = useAppSelector(
     (state) => state.modal.bookmarkModifyModal
+  );
+  const isOwnershipTransferModal = useAppSelector(
+    (state) => state.modal.ownershipTransferModal
+  );
+  const isGroupOwnershipTransferModal = useAppSelector(
+    (state) => state.modal.groupOwnershipTransperModal
   );
 
   const dispatch = useAppDispatch();
@@ -231,6 +241,24 @@ function App() {
                     }
                   >
                     <BookmarkModifyModal />
+                  </Modal>
+
+                  {/* 회원탈퇴 전 소유자 이전 */}
+                  <Modal
+                    isOpen={isOwnershipTransferModal}
+                    onClose={() =>
+                      dispatch(setOwnershipTransferModal({ open: false }))
+                    }
+                  >
+                    <OwnershipTransferModal />
+                  </Modal>
+                  <Modal
+                    isOpen={isGroupOwnershipTransferModal}
+                    onClose={() =>
+                      dispatch(setGroupOwnershipTransferModal(false))
+                    }
+                  >
+                    <GroupOwnershipTransferModal />
                   </Modal>
                 </>
               ) : (
