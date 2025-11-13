@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import BookmarkCard from './BookmarkCard';
 import CategoryManager from './CategoryManager';
-import { fetchBookmarks, nextUiPage, reset } from '../Util/bookmarkSlice';
+import { fetchBookmarks, reset } from '../Util/bookmarkSlice';
 import { selectSelectedId } from '../Util/categorySlice';
 import { useAppDispatch, useAppSelector } from '../Util/hook';
 
@@ -10,12 +10,12 @@ const Main = () => {
 
   const bookmarks = useAppSelector((s) => s.bookmark.items);
   const loading = useAppSelector((s) => s.bookmark.loading);
+  const cursor = useAppSelector((s) => s.bookmark.cursor);
+  const hasNext = useAppSelector((s) => s.bookmark.hasNext);
 
   const selectedCategory = useAppSelector(selectSelectedId);
   const selectedGroupId = useAppSelector((s) => s.group.selectedGroupId);
 
-  const uipage = useAppSelector((s) => s.bookmark.uiPage);
-  const totalPages = useAppSelector((s) => s.bookmark.totalPages);
   const [inputKeyword, setInputKeyword] = useState('');
   const [keyword, setKeyword] = useState('');
 
@@ -28,7 +28,7 @@ const Main = () => {
       fetchBookmarks({
         groupId: selectedGroupId,
         categoryId: selectedCategory,
-        page: uipage,
+        cursor: null,
         keyword,
       })
     );
@@ -37,14 +37,13 @@ const Main = () => {
   // 더보기 버튼
   const handleMore = () => {
     if (!selectedGroupId || selectedCategory == null) return;
-    if (uipage >= totalPages) return;
-    const next = uipage + 1;
-    dispatch(nextUiPage(next));
+    if (!hasNext || loading) return;
+
     dispatch(
       fetchBookmarks({
         groupId: selectedGroupId,
         categoryId: selectedCategory,
-        page: next,
+        cursor,
         keyword,
       })
     );
@@ -89,13 +88,15 @@ const Main = () => {
 
       {/* 더 보기 버튼 */}
       <div className="mt-6 flex justify-center">
-        <button
-          onClick={handleMore}
-          disabled={loading}
-          className="px-4 py-2 rounded bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50"
-        >
-          {loading ? '불러오는 중...' : '더 보기'}
-        </button>
+        {hasNext && (
+          <button
+            onClick={handleMore}
+            disabled={loading}
+            className="px-4 py-2 rounded bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50"
+          >
+            {loading ? '불러오는 중...' : '더 보기'}
+          </button>
+        )}
       </div>
     </main>
   );

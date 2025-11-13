@@ -6,19 +6,16 @@ interface BookmarkMapSearchProps {
   onSelectBookmark: (lat: number, lng: number) => void;
   onSearch: (keyword: string) => void;
   onMore: () => void;
-  page: number;
-  totalPages: number;
 }
 
 const BookmarkMapSearch = ({
   onSelectBookmark,
   onSearch,
   onMore,
-  page,
-  totalPages,
 }: BookmarkMapSearchProps) => {
   const bookmarks = useAppSelector((state) => state.bookmarkMap.items);
-  const loading = useAppSelector((state) => state.bookmark.loading);
+  const loading = useAppSelector((state) => state.bookmarkMap.loading);
+  const hasNext = useAppSelector((state) => state.bookmarkMap.hasNext);
 
   const [inputKeyword, setInputKeyword] = useState('');
 
@@ -74,7 +71,7 @@ const BookmarkMapSearch = ({
       </div>
 
       {/* 더 보기 버튼 */}
-      {page + 1 <= totalPages && (
+      {hasNext && (
         <div className="mt-6 flex justify-center">
           <button
             onClick={onMore}

@@ -1,4 +1,8 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {
+  createSlice,
+  createAsyncThunk,
+  type PayloadAction,
+} from '@reduxjs/toolkit';
 import axios from 'axios';
 
 type Tag = { tagId: number; tagName: string };
@@ -18,58 +22,56 @@ interface Bookmark {
   liked: boolean;
 }
 
-interface PageResponse<T> {
+interface CursorResponse<T> {
   content: T[];
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-  totalElements: number;
-  first: boolean;
-  last: boolean;
+  nextCursor: number | null;
+  hasNext: boolean;
 }
 
 interface BookmarkState {
   items: Bookmark[];
   loading: boolean;
-  page: number;
-  totalPages: number;
-  totalElements: number;
+  cursor: number | null;
+  hasNext: boolean;
 }
 
 const initialState: BookmarkState = {
   items: [],
   loading: false,
-  page: -1,
-  totalPages: 0,
-  totalElements: 0,
+  cursor: null,
+  hasNext: true,
 };
 
 export const fetchBookmarksMap = createAsyncThunk<
-  PageResponse<Bookmark>,
+  CursorResponse<Bookmark>,
   {
     groupId: number | null;
     categoryId: number | null;
-    page: number;
+    cursor?: number | null;
     keyword?: string;
+    tagId?: number | null;
+    size?: number;
   }
->('bookmarkMaps/fetch', async ({ groupId, categoryId, page, keyword }) => {
-  if (categoryId === -1) {
-    categoryId = null;
-  }
-
-  console.log('보내는 페이지', page);
-  const { data } = await axios.get<PageResponse<Bookmark>>(
-    `https://www.marksphere.link/api/groups/${groupId}/bookmarks/map`,
-    {
-      params: { page, categoryId, keyword },
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
+>(
+  'bookmarkMaps/fetch',
+  async ({ groupId, categoryId, cursor, keyword, tagId, size }) => {
+    if (categoryId === -1) {
+      categoryId = null;
     }
-  );
-  console.log(data);
-  return data;
-});
+
+    const { data } = await axios.get<CursorResponse<Bookmark>>(
+      `https://www.marksphere.link/api/groups/${groupId}/bookmarks/map`,
+      {
+        params: { categoryId, keyword, tagId, cursor, size },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    );
+    console.log(data);
+    return data;
+  }
+);
 
 const bookmarMapSlice = createSlice({
   name: 'bookmarkMaps',
@@ -78,9 +80,19 @@ const bookmarMapSlice = createSlice({
     bookmarkMapreset(state) {
       state.items = [];
       state.loading = false;
-      state.page = -1;
-      state.totalPages = 0;
-      state.totalElements = 0;
+      state.cursor = null;
+      state.hasNext = true;
+    },
+    addMapBookmark(state, action: PayloadAction<Bookmark>) {
+      const exists = state.items.some(
+        (b) => b.bookmarkId === action.payload.bookmarkId
+      );
+      if (!exists) {
+        state.items.unshift(action.payload);
+      }
+    },
+    removeMapBookmark(state, action: PayloadAction<number>) {
+      state.items = state.items.filter((b) => b.bookmarkId !== action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -89,17 +101,15 @@ const bookmarMapSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchBookmarksMap.fulfilled, (state, action) => {
-        const { content, pageNumber, totalPages, totalElements } =
-          action.payload;
-        if (pageNumber <= state.page) {
-          state.loading = false;
-          return;
-        }
+        const { content, nextCursor, hasNext } = action.payload;
 
-        state.items = [...state.items, ...content];
-        state.page = pageNumber;
-        state.totalPages = totalPages;
-        state.totalElements = totalElements;
+        //중복된 북마크 제외
+        const existingIds = new Set(state.items.map((b) => b.bookmarkId));
+        const newItems = content.filter((b) => !existingIds.has(b.bookmarkId));
+
+        state.items = [...state.items, ...newItems];
+        state.cursor = nextCursor ?? null;
+        state.hasNext = hasNext;
         state.loading = false;
       })
       .addCase(fetchBookmarksMap.rejected, (state) => {
@@ -108,5 +118,6 @@ const bookmarMapSlice = createSlice({
   },
 });
 
-export const { bookmarkMapreset } = bookmarMapSlice.actions;
+export const { bookmarkMapreset, addMapBookmark, removeMapBookmark } =
+  bookmarMapSlice.actions;
 export default bookmarMapSlice.reducer;

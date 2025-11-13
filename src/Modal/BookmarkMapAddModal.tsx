@@ -5,20 +5,21 @@ import { setBookMarkMapAdd } from '../Util/modalSlice';
 import SimpleBookmarkCard from '../Components/SimpleBookmarkCard';
 import { selectCategory, selectSelectedId } from '../Util/categorySlice';
 import toast from 'react-hot-toast';
-import { bookmarkMapreset, fetchBookmarksMap } from '../Util/bookmarkMapSlice';
+import { addMapBookmark } from '../Util/bookmarkMapSlice';
+import { removeMarker } from '../Util/bookmarkMarkerSlice';
 
 const BookmarkMapAddModal = () => {
   const dispatch = useAppDispatch();
   const bookmarks = useAppSelector((state) => state.bookmark.items);
   const loading = useAppSelector((state) => state.bookmark.loading);
+  const cursor = useAppSelector((state) => state.bookmark.cursor);
+  const hasNext = useAppSelector((state) => state.bookmark.hasNext);
+
   const context = useAppSelector((state) => state.modal.bookmarkMapContext);
-  const selectedCategory = useAppSelector(selectSelectedId);
   const selectedGroupId = useAppSelector(
     (state) => state.group.selectedGroupId
   );
-
-  const [page, setPage] = useState(0);
-  const totalPages = useAppSelector((state) => state.bookmark.totalPages);
+  const selectedCategory = useAppSelector(selectSelectedId);
 
   const [inputKeyword, setInputKeyword] = useState('');
   const [keyword, setKeyword] = useState('');
@@ -27,23 +28,27 @@ const BookmarkMapAddModal = () => {
     if (!context) return;
 
     try {
-      await dispatch(
+      const res = await dispatch(
         updateBookmark({
           bookmarkId,
           latitude: context.position.lat,
           longitude: context.position.lng,
         })
+      ).unwrap();
+
+      const updatedBookmark = bookmarks.find(
+        (b) => b.bookmarkId === bookmarkId
       );
 
-      dispatch(bookmarkMapreset());
-      await dispatch(
-        fetchBookmarksMap({
-          groupId: selectedGroupId,
-          categoryId: -1,
-          page: 0,
-          keyword: '',
-        })
-      );
+      if (updatedBookmark?.categoryId === selectedCategory) {
+        if (updatedBookmark) {
+          // 위도, 경도 최신 정보로 업데이트
+          const finalBookmark = { ...updatedBookmark, ...res };
+          dispatch(addMapBookmark(finalBookmark));
+        }
+      } else {
+        dispatch(removeMarker(context.id));
+      }
 
       toast.success('북마크가 추가되었습니다.');
       dispatch(setBookMarkMapAdd({ open: false }));
@@ -54,29 +59,26 @@ const BookmarkMapAddModal = () => {
   };
 
   useEffect(() => {
-    if (selectedCategory === null || selectedGroupId === null) return;
+    if (selectedGroupId === null) return;
     dispatch(reset());
-    setPage(1);
     dispatch(
       fetchBookmarks({
         groupId: selectedGroupId,
-        categoryId: selectedCategory,
-        page: 0,
+        categoryId: -1,
+        cursor: null,
         keyword: keyword,
       })
     );
-  }, [dispatch, selectedCategory, selectedGroupId, keyword]);
+  }, [dispatch, selectedGroupId, keyword]);
 
   const handleMore = () => {
     if (!selectedGroupId || selectCategory == null) return;
-    if (page + 1 > totalPages) return;
-    const next = page + 1;
-    setPage(next);
+    if (!hasNext || loading) return;
     dispatch(
       fetchBookmarks({
         groupId: selectedGroupId,
-        categoryId: selectedCategory,
-        page: next,
+        categoryId: -1,
+        cursor: cursor,
         keyword: keyword,
       })
     );
@@ -113,7 +115,7 @@ const BookmarkMapAddModal = () => {
       </div>
       {/* 북마크 리스트 */}
       <div
-        className="flex overflow-x-auto space-x-2 h-80"
+        className="flex overflow-x-auto space-x-10 h-80"
         onWheel={(e) => {
           e.currentTarget.scrollLeft += e.deltaY;
         }}

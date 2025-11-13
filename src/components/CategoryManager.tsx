@@ -178,7 +178,7 @@ const CategoryManager = () => {
       fetchBookmarks({
         groupId: selectedGroupId,
         categoryId: selectedId,
-        page: 0,
+        cursor: null,
       })
     );
     setEditingId(null);
@@ -187,7 +187,7 @@ const CategoryManager = () => {
   const onDelete = (id: number) => {
     dispatch(deleteCategory({ id }));
     dispatch(
-      fetchBookmarks({ groupId: selectedGroupId, categoryId: -1, page: 0 })
+      fetchBookmarks({ groupId: selectedGroupId, categoryId: -1, cursor: null })
     );
   };
 

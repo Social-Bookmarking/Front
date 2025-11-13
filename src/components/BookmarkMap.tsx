@@ -7,7 +7,11 @@ import {
 import { Trash2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../Util/hook';
-import { bookmarkMapreset, fetchBookmarksMap } from '../Util/bookmarkMapSlice';
+import {
+  bookmarkMapreset,
+  fetchBookmarksMap,
+  removeMapBookmark,
+} from '../Util/bookmarkMapSlice';
 import { setBookMarkMapAdd } from '../Util/modalSlice';
 import SimpleBookmarkCard from './SimpleBookmarkCard';
 import BookmarkMapSearch from './BookmarkMapSearch';
@@ -20,6 +24,7 @@ import {
 } from '../Util/bookmarkMarkerSlice';
 import { updateBookmark } from '../Util/bookmarkSlice';
 import toast from 'react-hot-toast';
+import { selectSelectedId } from '../Util/categorySlice';
 
 interface Place {
   id: string;
@@ -34,45 +39,47 @@ interface Place {
 const BookmarkMap = () => {
   const dispatch = useAppDispatch();
   const bookmarks = useAppSelector((state) => state.bookmarkMap.items);
+  const loading = useAppSelector((state) => state.bookmarkMap.loading);
+  const cursor = useAppSelector((state) => state.bookmarkMap.cursor);
+  const hasNext = useAppSelector((state) => state.bookmarkMap.hasNext);
   const selectedGroupId = useAppSelector(
     (state) => state.group.selectedGroupId
   );
+  const selectedCategory = useAppSelector(selectSelectedId);
+
   const markers = useAppSelector((state) => state.bookmarkMarker.markers);
   const openIds = useAppSelector((state) => state.bookmarkMarker.openIds);
   const counter = useAppSelector((state) => state.bookmarkMarker.counter);
-  const totalElements = useAppSelector(
-    (state) => state.bookmarkMap.totalElements
-  );
 
-  const [page, setPage] = useState(0);
-  const totalPages = useAppSelector((state) => state.bookmarkMap.totalPages);
+  const totalElements = bookmarks.filter(
+    (b) => b.latitude != null && b.longitude != null
+  ).length;
+
   const [searchKeyword, setSearchKeyword] = useState('');
 
   useEffect(() => {
-    if (!selectedGroupId) return;
+    if (!selectedGroupId || !selectedCategory) return;
 
     dispatch(bookmarkMapreset());
     dispatch(resetMarkers());
-    setPage(1);
 
     dispatch(
       fetchBookmarksMap({
         groupId: selectedGroupId,
-        categoryId: -1,
-        page: 1,
-        keyword: '',
+        categoryId: selectedCategory,
+        cursor: null,
       })
     );
-  }, [dispatch, selectedGroupId]);
+  }, [dispatch, selectedCategory, selectedGroupId]);
 
   const handleMore = () => {
     if (!selectedGroupId) return;
-    if (page + 1 > totalPages) return;
+    if (!hasNext || loading) return;
     dispatch(
       fetchBookmarksMap({
         groupId: selectedGroupId,
         categoryId: -1,
-        page: page + 1,
+        cursor: cursor,
         keyword: searchKeyword,
       })
     );
@@ -172,7 +179,7 @@ const BookmarkMap = () => {
       fetchBookmarksMap({
         groupId: selectedGroupId,
         categoryId: -1,
-        page: 1,
+        cursor: null,
         keyword,
       })
     )
@@ -199,15 +206,7 @@ const BookmarkMap = () => {
         })
       );
 
-      dispatch(bookmarkMapreset());
-      await dispatch(
-        fetchBookmarksMap({
-          groupId: selectedGroupId,
-          categoryId: -1,
-          page: 0,
-          keyword: '',
-        })
-      );
+      dispatch(removeMapBookmark(bookmarkId));
 
       toast.success('북마크가 삭제되었습니다.');
     } catch (err) {
@@ -428,8 +427,6 @@ const BookmarkMap = () => {
           onSelectBookmark={moveToBookmark}
           onMore={handleMore}
           onSearch={handleSearch}
-          page={page}
-          totalPages={totalPages}
         />
       </div>
     </div>

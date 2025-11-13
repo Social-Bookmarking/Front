@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from '../Util/hook';
 import {
   fetchCategories,
   selectCategories,
-  selectCategory,
+  selectSelectedId,
 } from '../Util/categorySlice';
 import { setBookMarkAdd } from '../Util/modalSlice';
 import {
@@ -16,7 +16,7 @@ import {
 } from '@headlessui/react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
-import { fetchBookmarks, reset } from '../Util/bookmarkSlice';
+import { addBookmark } from '../Util/bookmarkSlice';
 import default_image from '../assets/img/default/default_image.png';
 
 interface OgInfo {
@@ -38,6 +38,7 @@ const BookmarkAddModal = () => {
 
   const groupId = useAppSelector(selectSelectedGroup);
   const categories = useAppSelector(selectCategories);
+  const selectedCategory = useAppSelector(selectSelectedId);
   const dispatch = useAppDispatch();
 
   const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
@@ -192,8 +193,7 @@ const BookmarkAddModal = () => {
     }
 
     try {
-      console.log(tagNames);
-      await axios.post(
+      const res = await axios.post(
         `https://www.marksphere.link/api/groups/${groupId}/bookmarks`,
         {
           categoryId,
@@ -214,20 +214,16 @@ const BookmarkAddModal = () => {
           },
         }
       );
+
+      const newBookmark = res.data;
       toast.success('저장 완료!');
 
       dispatch(fetchCategories(groupId));
-      dispatch(reset());
-      dispatch(
-        fetchBookmarks({
-          groupId,
-          categoryId: -1,
-          page: 0,
-          keyword: '',
-        })
-      );
 
-      dispatch(selectCategory(-1));
+      if (selectedCategory === res.data.categoryId) {
+        dispatch(addBookmark(newBookmark));
+      }
+
       dispatch(setBookMarkAdd(false));
     } catch (err) {
       console.error(err);

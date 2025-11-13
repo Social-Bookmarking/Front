@@ -64,7 +64,14 @@ const AuthPage = () => {
         localStorage.setItem('token', res.data.accessToken);
         window.dispatchEvent(new Event('storage'));
         window.dispatchEvent(new Event('reload-loading'));
-        navigate('/');
+
+        const pendingCode = localStorage.getItem('pendingInviteCode');
+        if (pendingCode) {
+          localStorage.removeItem('pendingIviteCode');
+          navigate(`/group/qr/join?code=${pendingCode}`);
+        } else {
+          navigate('/');
+        }
       } catch (err) {
         console.error('axios 에러:', err);
         toast.error('로그인에 실패했습니다.\n 다시 시도해주세요.');

@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useAppDispatch } from '../Util/hook';
 import { setGroupParticipationModal } from '../Util/modalSlice';
@@ -21,14 +21,15 @@ const GroupParticipation = () => {
   const [loading, setLoading] = useState(false);
   const [joining, setJoining] = useState(false);
 
-  const handleCheckCode = async () => {
-    if (!inviteCode.trim()) return toast.error('초대 코드를 입력하세요.');
+  const handleCheckCode = async (code?: string) => {
+    const targetCode = code || inviteCode;
+    if (!targetCode.trim()) return toast.error('초대 코드를 입력하세요.');
 
     setGroupInfo(null);
     setLoading(true);
     try {
       const res = await axios.get(
-        `https://www.marksphere.link/api/groups/join?code=${inviteCode}`,
+        `https://www.marksphere.link/api/groups/join?code=${targetCode}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -64,8 +65,8 @@ const GroupParticipation = () => {
       );
 
       await dispatch(fetchGroups());
-
       toast.success('그룹에 가입했습니다.');
+      dispatch(setGroupParticipationModal(false));
     } catch (error) {
       const err = error as AxiosError;
       if (err.response?.status === 409) {
@@ -77,6 +78,15 @@ const GroupParticipation = () => {
       setJoining(false);
     }
   };
+
+  useEffect(() => {
+    const codeFromQR = localStorage.getItem('inviteCodeFromQR');
+    if (codeFromQR) {
+      setInviteCode(codeFromQR);
+      handleCheckCode(codeFromQR);
+      localStorage.removeItem('iviteCodeFromQR');
+    }
+  }, []);
 
   return (
     <div className="w-[50vw] max-w-md flex flex-col">
@@ -94,7 +104,7 @@ const GroupParticipation = () => {
           className="flex-1 px-4 py-2 border border-[#E6E5F2] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
         />
         <button
-          onClick={handleCheckCode}
+          onClick={() => handleCheckCode}
           disabled={loading}
           className="px-4 py-2 bg-violet-600 text-white text-sm rounded-lg hover:bg-violet-700 disabled:bg-gray-400"
         >

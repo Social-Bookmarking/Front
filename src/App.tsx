@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import Sidebar from './Components/Sidebar';
 import Header from './Components/Header';
+import GroupQrJoinPage from './Components/GroupQrJoinPage';
 
 // 모달
 import Modal from './Util/modal';
@@ -19,6 +20,7 @@ import GroupDeleteModal from './Modal/GroupDelete';
 import GroupExitModal from './Modal/GroupExit';
 import BookmarkModifyModal from './Modal/BookmarkModifyModal';
 import OwnershipTransferModal from './Modal/OwnershipTransferModal';
+import GroupOwnershipTransferModal from './Modal/GroupOwnershipTransferModal';
 
 import { useAppSelector, useAppDispatch } from './Util/hook';
 import {
@@ -40,7 +42,6 @@ import {
 } from './Util/modalSlice';
 import { useState, lazy, Suspense, useCallback, useEffect } from 'react';
 import AuthPage from './AuthPage';
-import GroupOwnershipTransferModal from './Modal/GroupOwnershipTransferModal';
 
 // 동적 import() 지도가 로딩에 많은 영향을 줌
 const Main = lazy(() => import('./Components/Main'));
@@ -118,6 +119,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<AuthPage />} />
+          <Route path="/group/qr/join" element={<GroupQrJoinPage />} />
           <Route
             path="/*"
             element={

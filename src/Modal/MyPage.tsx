@@ -48,8 +48,6 @@ const MyPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   // 북마크 관련
-  const [createdPage, setCreatedPage] = useState(0);
-  const [likedPage, setLikedPage] = useState(0);
   const created = useAppSelector((state) => state.userBookmark.created);
   const liked = useAppSelector((state) => state.userBookmark.liked);
   const [bookmarkView, setBookmarkView] = useState<'created' | 'liked'>(
@@ -77,27 +75,21 @@ const MyPage = () => {
     if (tab === 'myBookmark') {
       if (bookmarkView === 'created') {
         dispatch(resetCreated());
-        setCreatedPage(1);
-        dispatch(fetchCreatedBookmarks(1));
+        dispatch(fetchCreatedBookmarks({ cursor: null }));
       } else {
         dispatch(resetLiked());
-        setLikedPage(1);
-        dispatch(fetchLikedBookmarks(1));
+        dispatch(fetchLikedBookmarks({ cursor: null }));
       }
     }
   }, [tab, bookmarkView, dispatch]);
 
   const handleMore = (bookmarkView: 'created' | 'liked') => {
     if (bookmarkView === 'created') {
-      if (createdPage + 1 > created.totalPages) return;
-      const next = createdPage + 1;
-      setCreatedPage(next);
-      dispatch(fetchCreatedBookmarks(next));
+      if (!created.hasNext || created.loading) return;
+      dispatch(fetchCreatedBookmarks({ cursor: created.cursor }));
     } else {
-      if (likedPage + 1 > liked.totalPages) return;
-      const next = likedPage + 1;
-      setLikedPage(next);
-      dispatch(fetchLikedBookmarks(next));
+      if (!liked.hasNext || liked.loading) return;
+      dispatch(fetchLikedBookmarks({ cursor: liked.cursor }));
     }
   };
 

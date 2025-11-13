@@ -23,59 +23,56 @@ export interface Bookmark {
   liked: boolean;
 }
 
-interface PageResponse<T> {
+interface CursorResponse<T> {
   content: T[];
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-  totalElements: number;
-  first: boolean;
-  last: boolean;
+  nextCursor: number | null;
+  hasNext: boolean;
 }
 
 interface BookmarkState {
   items: Bookmark[];
   loading: boolean;
-  page: number;
-  uiPage: number;
-  totalPages: number;
-  totalElements: number;
+  cursor: number | null;
+  hasNext: boolean;
 }
 
 const initialState: BookmarkState = {
   items: [],
   loading: false,
-  page: -1,
-  uiPage: 1,
-  totalPages: 0,
-  totalElements: 0,
+  cursor: null,
+  hasNext: true,
 };
 
 export const fetchBookmarks = createAsyncThunk<
-  PageResponse<Bookmark>,
+  CursorResponse<Bookmark>,
   {
     groupId: number | null;
-    categoryId: number | null;
-    page: number;
+    categoryId?: number | null;
+    cursor?: number | null;
     keyword?: string;
+    tagId?: number | null;
+    size?: number;
   }
->('bookmarks/fetch', async ({ groupId, categoryId, page, keyword }) => {
-  if (categoryId === -1) {
-    categoryId = null;
-  }
-
-  const { data } = await axios.get<PageResponse<Bookmark>>(
-    `https://www.marksphere.link/api/groups/${groupId}/bookmarks`,
-    {
-      params: { page, categoryId, keyword },
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
+>(
+  'bookmarks/fetch',
+  async ({ groupId, categoryId, cursor, keyword, tagId, size }) => {
+    if (categoryId === -1) {
+      categoryId = null;
     }
-  );
-  console.log(data);
-  return data;
-});
+
+    const { data } = await axios.get<CursorResponse<Bookmark>>(
+      `https://www.marksphere.link/api/groups/${groupId}/bookmarks`,
+      {
+        params: { categoryId, keyword, tagId, cursor, size },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    );
+    console.log(data);
+    return data;
+  }
+);
 
 export const updateBookmark = createAsyncThunk<
   Partial<Bookmark> & {
@@ -128,13 +125,16 @@ const bookmarkSlice = createSlice({
     reset(state) {
       state.items = [];
       state.loading = false;
-      state.page = -1;
-      state.uiPage = 1;
-      state.totalPages = 0;
-      state.totalElements = 0;
+      state.cursor = null;
+      state.hasNext = true;
     },
-    nextUiPage(state, action: PayloadAction<number>) {
-      state.uiPage = action.payload;
+    addBookmark(state, action: PayloadAction<Bookmark>) {
+      const exists = state.items.some(
+        (b) => b.bookmarkId === action.payload.bookmarkId
+      );
+      if (!exists) {
+        state.items.unshift(action.payload);
+      }
     },
   },
   extraReducers: (builder) => {
@@ -143,19 +143,15 @@ const bookmarkSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchBookmarks.fulfilled, (state, action) => {
-        // 임시로 만든 코드
-        const { content, pageNumber, totalPages, totalElements } =
-          action.payload;
-        // 이미 로드된 페이지는 다시 추가하지 않음
-        if (pageNumber <= state.page) {
-          state.loading = false;
-          return;
-        }
+        const { content, nextCursor, hasNext } = action.payload;
 
-        state.items = [...state.items, ...content];
-        state.page = pageNumber;
-        state.totalPages = totalPages;
-        state.totalElements = totalElements;
+        // 커서 중복 방지
+        const existingIds = new Set(state.items.map((b) => b.bookmarkId));
+        const newItems = content.filter((b) => !existingIds.has(b.bookmarkId));
+
+        state.items = [...state.items, ...newItems];
+        state.cursor = nextCursor ?? null;
+        state.hasNext = hasNext;
         state.loading = false;
       })
       .addCase(fetchBookmarks.rejected, (state) => {
@@ -186,5 +182,5 @@ const bookmarkSlice = createSlice({
   },
 });
 
-export const { reset, nextUiPage } = bookmarkSlice.actions;
+export const { reset, addBookmark } = bookmarkSlice.actions;
 export default bookmarkSlice.reducer;

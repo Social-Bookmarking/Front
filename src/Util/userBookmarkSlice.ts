@@ -18,58 +18,44 @@ export interface UserBookmark {
   liked: boolean;
 }
 
-interface PageResponse<T> {
+interface CursorResponse<T> {
   content: T[];
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-  totalElements: number;
-  first: boolean;
-  last: boolean;
+  nextCursor: number | null;
+  hasNext: boolean;
+}
+
+interface BookmarkListState {
+  items: UserBookmark[];
+  cursor: number | null;
+  hasNext: boolean;
+  loading: boolean;
 }
 
 interface UserBookmarkState {
-  created: {
-    items: UserBookmark[];
-    page: number;
-    totalPages: number;
-    totalElements: number;
-    loading: boolean;
-  };
-  liked: {
-    items: UserBookmark[];
-    page: number;
-    totalPages: number;
-    totalElements: number;
-    loading: boolean;
-  };
+  created: BookmarkListState;
+  liked: BookmarkListState;
 }
 
+const initialListState: BookmarkListState = {
+  items: [],
+  cursor: null,
+  hasNext: true,
+  loading: false,
+};
+
 const initialState: UserBookmarkState = {
-  created: {
-    items: [],
-    page: -1,
-    totalPages: 0,
-    totalElements: 0,
-    loading: false,
-  },
-  liked: {
-    items: [],
-    page: -1,
-    totalPages: 0,
-    totalElements: 0,
-    loading: false,
-  },
+  created: { ...initialListState },
+  liked: { ...initialListState },
 };
 
 export const fetchCreatedBookmarks = createAsyncThunk<
-  PageResponse<UserBookmark>,
-  number
->('userBookmar/fetchCreated', async (page) => {
-  const { data } = await axios.get<PageResponse<UserBookmark>>(
+  CursorResponse<UserBookmark>,
+  { cursor?: number | null; size?: number }
+>('userBookmar/fetchCreated', async ({ cursor, size }) => {
+  const { data } = await axios.get<CursorResponse<UserBookmark>>(
     'https://www.marksphere.link/api/me/bookmarks',
     {
-      params: { page },
+      params: { cursor, size },
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
@@ -79,19 +65,18 @@ export const fetchCreatedBookmarks = createAsyncThunk<
 });
 
 export const fetchLikedBookmarks = createAsyncThunk<
-  PageResponse<UserBookmark>,
-  number
->('userBookmarks/fetchLiked', async (page) => {
-  const { data } = await axios.get<PageResponse<UserBookmark>>(
+  CursorResponse<UserBookmark>,
+  { cursor?: number | null; size?: number }
+>('userBookmarks/fetchLiked', async ({ cursor, size }) => {
+  const { data } = await axios.get<CursorResponse<UserBookmark>>(
     'https://www.marksphere.link/api/me/liked-bookmarks',
     {
-      params: { page },
+      params: { cursor, size },
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     }
   );
-  console.log(data);
   return data;
 });
 
@@ -100,22 +85,10 @@ const userBookmarkSlice = createSlice({
   initialState,
   reducers: {
     resetCreated(state) {
-      state.created = {
-        items: [],
-        page: -1,
-        totalPages: 0,
-        totalElements: 0,
-        loading: false,
-      };
+      state.created = { ...initialListState };
     },
     resetLiked(state) {
-      state.liked = {
-        items: [],
-        page: -1,
-        totalPages: 0,
-        totalElements: 0,
-        loading: false,
-      };
+      state.liked = { ...initialListState };
     },
   },
   extraReducers: (builder) => {
@@ -124,16 +97,16 @@ const userBookmarkSlice = createSlice({
         state.created.loading = true;
       })
       .addCase(fetchCreatedBookmarks.fulfilled, (state, action) => {
-        const { content, pageNumber, totalPages, totalElements } =
-          action.payload;
-        if (pageNumber <= state.created.page) {
-          state.created.loading = false;
-          return;
-        }
-        state.created.items = [...state.created.items, ...content];
-        state.created.page = pageNumber;
-        state.created.totalPages = totalPages;
-        state.created.totalElements = totalElements;
+        const { content, nextCursor, hasNext } = action.payload;
+
+        const existingIds = new Set(
+          state.created.items.map((b) => b.bookmarkId)
+        );
+        const newItems = content.filter((b) => !existingIds.has(b.bookmarkId));
+
+        state.created.items = [...state.created.items, ...newItems];
+        state.created.cursor = nextCursor ?? null;
+        state.created.hasNext = hasNext;
         state.created.loading = false;
       })
       .addCase(fetchCreatedBookmarks.rejected, (state) => {
@@ -144,16 +117,14 @@ const userBookmarkSlice = createSlice({
         state.liked.loading = true;
       })
       .addCase(fetchLikedBookmarks.fulfilled, (state, action) => {
-        const { content, pageNumber, totalPages, totalElements } =
-          action.payload;
-        if (pageNumber <= state.liked.page) {
-          state.liked.loading = false;
-          return;
-        }
-        state.liked.items = [...state.liked.items, ...content];
-        state.liked.page = pageNumber;
-        state.liked.totalPages = totalPages;
-        state.liked.totalElements = totalElements;
+        const { content, nextCursor, hasNext } = action.payload;
+
+        const existingIds = new Set(state.liked.items.map((b) => b.bookmarkId));
+        const newItems = content.filter((b) => !existingIds.has(b.bookmarkId));
+
+        state.liked.items = [...state.liked.items, ...newItems];
+        state.liked.cursor = nextCursor ?? null;
+        state.liked.hasNext = hasNext;
         state.liked.loading = false;
       })
       .addCase(fetchLikedBookmarks.rejected, (state) => {
