@@ -131,14 +131,14 @@ const BookmarkCard = ({
       </div>
       <div className="relative p-4 flex flex-col justify-between h-[150px]">
         <div>
-          <div
-            className="flex items-start justify-between gap-2 mb-2"
-            onClick={handleOpenNewTap}
-          >
+          <div className="flex items-start justify-between gap-2 mb-2">
             <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-violet-700">
               {title}
             </h3>
-            <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 flex-shrink-0" />
+            <ExternalLink
+              className="w-4 h-4 opacity-0 group-hover:opacity-100 flex-shrink-0 cursor-pointer hover:text-violet-700"
+              onClick={handleOpenNewTap}
+            />
           </div>
           <p className="text-xs text-gray-500 mb-2 line-clamp-2">
             {description}

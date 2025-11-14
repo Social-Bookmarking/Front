@@ -220,7 +220,7 @@ const BookmarkAddModal = () => {
 
       dispatch(fetchCategories(groupId));
 
-      if (selectedCategory === res.data.categoryId) {
+      if (selectedCategory === res.data.categoryId || selectedCategory === -1) {
         dispatch(addBookmark(newBookmark));
       }
 

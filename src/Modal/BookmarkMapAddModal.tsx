@@ -40,7 +40,10 @@ const BookmarkMapAddModal = () => {
         (b) => b.bookmarkId === bookmarkId
       );
 
-      if (updatedBookmark?.categoryId === selectedCategory) {
+      if (
+        updatedBookmark?.categoryId === selectedCategory ||
+        selectedCategory === -1
+      ) {
         if (updatedBookmark) {
           // 위도, 경도 최신 정보로 업데이트
           const finalBookmark = { ...updatedBookmark, ...res };

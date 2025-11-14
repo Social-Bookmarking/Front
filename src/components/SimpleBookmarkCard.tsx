@@ -1,3 +1,4 @@
+import { ExternalLink } from 'lucide-react';
 import { useAppSelector } from '../Util/hook';
 import { selectCategories } from '../Util/categorySlice';
 
@@ -28,6 +29,10 @@ const SimpleBookmarkCard = ({
   const categories = useAppSelector(selectCategories);
   const categoryName = categories.find((c) => c.id === categoryId)?.name;
 
+  const handleOpenNewTap = () => {
+    window.open(url, '_blank', 'noopener, noreferrer');
+  };
+
   return (
     <div className="group bg-[#fafafa] border-2 border-[#E6E5F2] rounded-2xl shadow-sm w-[220px]">
       <div className="relative overflow-hidden rounded-t-2xl">
@@ -46,6 +51,10 @@ const SimpleBookmarkCard = ({
             <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-violet-700">
               {title}
             </h3>
+            <ExternalLink
+              className="w-4 h-4 opacity-0 group-hover:opacity-100 flex-shrink-0 cursor-pointer hover:text-violet-700"
+              onClick={handleOpenNewTap}
+            />
           </div>
           <p className="text-xs text-gray-500 mb-2 line-clamp-2">
             {description}

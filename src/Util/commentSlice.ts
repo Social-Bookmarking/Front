@@ -100,7 +100,7 @@ export const addComment = createAsyncThunk(
     },
     { dispatch }
   ) => {
-    await axios.post(
+    const res = await axios.post(
       `https://www.marksphere.link/api/bookmarks/${bookmarkId}/comments`,
       { content, ...(parentId ? { parentId } : {}) },
       {
@@ -111,10 +111,12 @@ export const addComment = createAsyncThunk(
       }
     );
 
+    const data = res.data;
+
     if (parentId && isLastPage && rootCommentId) {
-      dispatch(fetchReplies({ commentId: rootCommentId }));
+      dispatch(addReplyLocal({ rootCommentId, reply: data }));
     } else if (!parentId && isLastPage) {
-      dispatch(fetchComments({ bookmarkId }));
+      dispatch(addCommentLocal({ bookmarkId, comment: data }));
     }
 
     return { bookmarkId, parentId, rootCommentId };
@@ -169,6 +171,36 @@ const commentSlice = createSlice({
         loading: false,
         error: null,
       };
+    },
+    addCommentLocal(state, action) {
+      const { bookmarkId, comment } = action.payload;
+      const commentState = state.commentsByBookmark[bookmarkId];
+      if (commentState) {
+        commentState.data = [...commentState.data, comment];
+      } else {
+        state.commentsByBookmark[bookmarkId] = {
+          data: [comment],
+          nextCursor: null,
+          hasNext: true,
+          loading: false,
+          error: null,
+        };
+      }
+    },
+    addReplyLocal(state, action) {
+      const { rootCommentId, reply } = action.payload;
+      const replyState = state.repliesByComment[rootCommentId];
+      if (replyState) {
+        replyState.data = [...replyState.data, reply];
+      } else {
+        state.repliesByComment[rootCommentId] = {
+          data: [reply],
+          nextCursor: null,
+          hasNext: true,
+          loading: false,
+          error: null,
+        };
+      }
     },
   },
   extraReducers: (builder) => {
@@ -289,5 +321,6 @@ const commentSlice = createSlice({
   },
 });
 
-export const { resetComments, resetReplies } = commentSlice.actions;
+export const { resetComments, resetReplies, addCommentLocal, addReplyLocal } =
+  commentSlice.actions;
 export default commentSlice.reducer;
