@@ -1,69 +1,45 @@
-# React + TypeScript + Vite
+# 🔖 MarkSphere
+<img height="300" alt="marksphere" src="https://github.com/user-attachments/assets/31639f89-e49c-4bd1-9adc-7532018ad4dc" />
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🧭 개발 배경
+인터넷을 통해 접하는 콘텐츠가 다양해지면서, 사용자는 개인적인 관심사부터 정보 수집, 맛집, 여행지 탐색까지 여러 목적의 링크를 꾸준히 저장하게 됩니다. 그러나 기존 브라우저 북마크는 정보가 누적될수록 분류가 어렵고, 공유나 협업에도 한계가 있어 실질적인 활용도가 떨어지는 경우가 많습니다.
+또한 위치 정보가 중요한 링크(예 : 맛집 리뷰, 여행지)는 실제 위치를 확인하기 위해 사용자가 다시 지도를 검색해야 하는 번거러움이 있습니다. 이러한 불편을 줄이기 위해서는 링크와 위치를 한눈에 확인할 수 있는 방식이 필요하지만, 기존 서비스들은 이를 직관적으로 제공하지 못하고 있습니다.
+**MarkSphere**는 이러한 불편함을 해결하고자 링크를 개인 또는 그룹이 함계 저장 및 공유할 수 있으며 장소 기반 링크도 지도에 표시할 수 있게 하였습니다.
 
-Currently, two official plugins are available:
+## 📖 프로젝트 소개
+**MakrSphere**는 개인 또는 그룹단위로 사용할 수 있는 워크스페이스를 기반으로 북마크를 체계적으로 저장하고 관리할 수 있는 환경을 제공하고 위치 정보가 중요한 북마크는 지도 위에 직접 저장하고 시각적으로 관리할 수 있는 사이트입니다.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 💻 주요 기능 (영상)
 
-## Expanding the ESLint configuration
+<details>
+  <summary><b>회원가입 및 로그인</b></summary>
+  <br />
+  <blockquote>
+    회원가입 및 로그인
+  </blockquote>
+  <br />
+  <p align="center">
+    
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    
+  </p>
+  
+  - 1
+  - 2
+  - 3
+</details>
+<br />
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+[전체 영상]()
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 👨🏻‍💻 팀원 소개
+<p align="center">
+  
+</p>
+</br>
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🛠️ 기술 스택
+<p align="center">
+  
+</p>
+</br>
