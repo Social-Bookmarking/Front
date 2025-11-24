@@ -43,6 +43,10 @@
   <blockquote>
     회원가입 및 로그인
   </blockquote>
+
+  <blockquote>
+    회원 정보 수정
+  </blockquote>
   <br />
   <p align="center">
     
@@ -55,6 +59,88 @@
   - 3
 </details>
 <br />
+
+<details>
+  <summary><b>북마크 관리</b></summary>
+  <br />
+  <blockquote>
+    카테고리 생성 및 삭제 영상
+  </blockquote>
+  
+  <blockquote>
+    북마크 생성 및 삭제 영상
+  </blockquote>
+
+  <blockquote>
+    지도에 북마크 위치 저장 및 삭제
+  </blockquote>
+  <br />
+  <p align="center">
+    
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    
+  </p>
+  
+  - 1
+  - 2
+  - 3
+</details>
+<br />
+
+<details>
+  <summary><b>댓글 및 답글</b></summary>
+  <br />
+  <blockquote>
+    댓글/답글 생성 및 삭제
+  </blockquote>
+  <br />
+  <p align="center">
+    
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    
+  </p>
+  
+  - 1
+  - 2
+  - 3
+</details>
+<br />
+
+<details>
+  <summary><b>그룹 관리</b></summary>
+  <br />
+  <blockquote>
+    그룹 생성 및 초대 코드 관리
+  </blockquote>
+
+  <blockquote>
+    멤버 권한 설명 (영상 x, 텍스트로 설명)
+  </blockquote>
+
+  <blockquote>
+    그룹 가입 및 탈퇴
+  </blockquote>
+
+  <blockquote>
+    그룹 삭제 시 처리 과정 (유예 기간을 가지고 삭제되는 것)
+  </blockquote>
+
+  <blockquote>
+    회원 탈퇴 시 그룹 소유자 양도 처리
+  </blockquote>
+  <br />
+  <p align="center">
+    
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    
+  </p>
+  
+  - 1
+  - 2
+  - 3
+</details>
+<br />
+
 
 [전체 영상]()
 
