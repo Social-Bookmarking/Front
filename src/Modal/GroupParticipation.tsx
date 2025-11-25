@@ -22,6 +22,7 @@ const GroupParticipation = () => {
   const [joining, setJoining] = useState(false);
 
   const handleCheckCode = async (code?: string) => {
+    console.log('실행');
     const targetCode = code || inviteCode;
     if (!targetCode.trim()) return toast.error('초대 코드를 입력하세요.');
 
@@ -104,7 +105,7 @@ const GroupParticipation = () => {
           className="flex-1 px-4 py-2 border border-[#E6E5F2] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
         />
         <button
-          onClick={() => handleCheckCode}
+          onClick={() => handleCheckCode()}
           disabled={loading}
           className="px-4 py-2 bg-violet-600 text-white text-sm rounded-lg hover:bg-violet-700 disabled:bg-gray-400"
         >
