@@ -187,14 +187,18 @@ const CategoryManager = () => {
   const onDelete = (id: number) => {
     dispatch(deleteCategory({ id }));
     dispatch(
-      fetchBookmarks({ groupId: selectedGroupId, categoryId: -1, cursor: null })
+      fetchBookmarks({
+        groupId: selectedGroupId,
+        categoryId: selectedId,
+        cursor: null,
+      })
     );
   };
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        delay: 100,
+        delay: 200,
         tolerance: 5,
       },
     })

@@ -80,6 +80,9 @@ const bookmarkMarkerSlice = createSlice({
       state.counter = 1;
       state.openIds = [];
     },
+    incrementCounter: (state) => {
+      state.counter += 1;
+    },
   },
 });
 
@@ -91,6 +94,7 @@ export const {
   addBookmarkToMarker,
   removeBookmarkFromMarker,
   resetMarkers,
+  incrementCounter,
 } = bookmarkMarkerSlice.actions;
 
 export default bookmarkMarkerSlice.reducer;

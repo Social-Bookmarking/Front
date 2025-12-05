@@ -127,19 +127,26 @@ const MemberSettingsModal = () => {
 
   useEffect(() => {
     const fetchInviteCode = async () => {
-      const inviteRes = await axios.get<{ code: string }>(
-        `https://www.marksphere.link/api/groups/${groupId}/invite-code`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
-      if (inviteRes.data.code) {
-        dispatch(setInviteCode(inviteRes.data.code));
+      try {
+        const inviteRes = await axios.get<{ code: string }>(
+          `https://www.marksphere.link/api/groups/${groupId}/invite-code`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
+
+        dispatch(setInviteCode(inviteRes.data.code ?? null));
+      } catch (err) {
+        console.error(err);
+        dispatch(setInviteCode(''));
       }
     };
-    fetchInviteCode();
+
+    if (groupId) {
+      fetchInviteCode();
+    }
   }, [groupId, dispatch]);
 
   const handleGenerateCode = async () => {
