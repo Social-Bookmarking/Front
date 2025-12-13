@@ -6,11 +6,13 @@ import axios from 'axios';
 interface User {
   nickname: string;
   profileImageUrl: string;
+  permission: string;
 }
 
 const initialState: User = {
   nickname: 'User',
   profileImageUrl: '',
+  permission: '',
 };
 
 export const fetchUserInfo = createAsyncThunk<User>('user/fetch', async () => {
@@ -68,18 +70,37 @@ export const changePassword = createAsyncThunk<
   }
 });
 
+export const getPermission = createAsyncThunk<{ permission: string }, number>(
+  'user/getPermission',
+  async (groupId) => {
+    const res = await axios.get<{ permission: string }>(
+      `https://www.marksphere.link/api/groups/${groupId}/permission`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    );
+    return res.data;
+  }
+);
+
 const userSlice = createSlice({
   name: 'userSlice',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(
-      fetchUserInfo.fulfilled,
-      (state, action: PayloadAction<User>) => {
-        state.nickname = action.payload.nickname;
-        state.profileImageUrl = action.payload.profileImageUrl;
-      }
-    );
+    builder
+      .addCase(
+        fetchUserInfo.fulfilled,
+        (state, action: PayloadAction<User>) => {
+          state.nickname = action.payload.nickname;
+          state.profileImageUrl = action.payload.profileImageUrl;
+        }
+      )
+      .addCase(getPermission.fulfilled, (state, action) => {
+        state.permission = action.payload.permission;
+      });
   },
 });
 

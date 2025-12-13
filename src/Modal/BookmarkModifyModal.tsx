@@ -15,6 +15,11 @@ import axios from 'axios';
 import default_image from '../assets/img/default/default_image.png';
 
 const BookmarkModifyModal = () => {
+  //마우스 로딩
+  const setGlobalCursor = (type: 'wait' | 'default') => {
+    document.body.style.cursor = type;
+  };
+
   const dispatch = useAppDispatch();
   const bookmarkId = useAppSelector(
     (state) => state.modal.bookmarkModifybookmarkId
@@ -36,7 +41,7 @@ const BookmarkModifyModal = () => {
 
   // 이미지
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [imageKey, setImageKey] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -52,69 +57,23 @@ const BookmarkModifyModal = () => {
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
+
     const file = e.target.files[0];
 
-    try {
-      setUploading(true);
-      setPreviewUrl(URL.createObjectURL(file));
-
-      const res = await axios.get(
-        `https://www.marksphere.link/api/me/profile/upload-url`,
-        {
-          params: { fileName: file.name },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
-      const { presignedUrl, fileKey } = res.data;
-
-      await axios.put(presignedUrl, file, {
-        headers: { 'Content-Type': file.type },
-      });
-
-      setImageKey(fileKey);
-    } catch (err) {
-      console.error(err);
-      toast.error('이미지 업로드 중 문제가 발생했습니다.');
-    } finally {
-      setUploading(false);
-    }
+    setImageFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
   };
 
   const handleResetImage = async () => {
-    try {
-      setUploading(true);
+    const response = await fetch(default_image);
+    const blob = await response.blob();
 
-      const response = await fetch(default_image);
-      const blob = await response.blob();
-      const defaultFile = new File([blob], 'default_image.png', {
-        type: blob.type || 'image/png',
-      });
+    const defaultFile = new File([blob], 'default_image.png', {
+      type: blob.type || 'image/png',
+    });
 
-      const res = await axios.get(
-        `https://www.marksphere.link/api/me/profile/upload-url`,
-        {
-          params: { fileName: defaultFile.name },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
-      const { presignedUrl, fileKey } = res.data;
-
-      await axios.put(presignedUrl, defaultFile, {
-        headers: { 'Content-Type': defaultFile.type },
-      });
-
-      setImageKey(fileKey);
-      setPreviewUrl(default_image);
-    } catch (err) {
-      console.error(err);
-      toast.error('기본 이미지로 변경 중 오류가 발생했습니다.');
-    } finally {
-      setUploading(false);
-    }
+    setImageFile(defaultFile);
+    setPreviewUrl(default_image);
   };
 
   const handleSave = async () => {
@@ -143,15 +102,33 @@ const BookmarkModifyModal = () => {
       JSON.stringify(tagNames) !==
       JSON.stringify(bookmark.tags.map((t) => t.tagName))
     ) {
-      console.log(tagNames);
       updates.tagNames = tagNames;
-    }
-    if (imageKey) {
-      updates.imageKey = imageKey;
-      updates.previewUrl = previewUrl || '';
     }
 
     try {
+      setUploading(true);
+      setGlobalCursor('wait');
+      if (imageFile) {
+        const res = await axios.get(
+          `https://www.marksphere.link/api/me/profile/upload-url`,
+          {
+            params: { fileName: imageFile.name },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
+
+        const { presignedUrl, fileKey } = res.data;
+
+        await axios.put(presignedUrl, imageFile, {
+          headers: { 'Content-Type': imageFile.type },
+        });
+
+        updates.imageKey = fileKey;
+        updates.previewUrl = previewUrl || '';
+      }
+
       await dispatch(updateBookmark(updates)).unwrap();
 
       if (updates.categoryId && updates.categoryId !== bookmark.categoryId) {
@@ -165,6 +142,9 @@ const BookmarkModifyModal = () => {
     } catch (err) {
       console.error(err);
       toast.error('북마크 수정에 실패했습니다');
+    } finally {
+      setUploading(false);
+      setGlobalCursor('default');
     }
   };
 

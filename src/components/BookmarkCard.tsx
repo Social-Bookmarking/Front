@@ -13,6 +13,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { deleteBookmark } from '../Util/bookmarkSlice';
 import { selectSelectedGroup } from '../Util/groupSlice';
+import ConfirmBox from './ConfirmBox';
 
 // 보여지는 태그 최대 개수
 const MAX_VISIBLE = 3;
@@ -46,6 +47,7 @@ const BookmarkCard = ({
 }: BookmarkCardProps) => {
   const dispatch = useAppDispatch();
   const [isLiked, setIsLiked] = useState(liked);
+  const [isDelete, setIsDelete] = useState(false);
   const categories = useAppSelector(selectCategories);
   const categoryName = categories.find((c) => c.id === categoryId)?.name;
   const currentGroupId = useAppSelector(selectSelectedGroup);
@@ -124,9 +126,7 @@ const BookmarkCard = ({
         />
         <Trash2
           className="absolute text-gray-400 w-4 h-4 bottom-3 right-3 hover:text-violet-700"
-          onClick={() =>
-            dispatch(deleteBookmark({ bookmarkId, groupId: currentGroupId }))
-          }
+          onClick={() => setIsDelete(true)}
         />
       </div>
       <div className="relative p-4 flex flex-col justify-between h-[150px]">
@@ -181,6 +181,16 @@ const BookmarkCard = ({
           {url}
         </span>
       </div>
+      {isDelete && (
+        <ConfirmBox
+          message="정말 삭제 하시겠습니까?"
+          onConfirm={() => {
+            dispatch(deleteBookmark({ bookmarkId, groupId: currentGroupId }));
+            setIsDelete(false);
+          }}
+          onCancel={() => setIsDelete(false)}
+        />
+      )}
     </div>
   );
 };

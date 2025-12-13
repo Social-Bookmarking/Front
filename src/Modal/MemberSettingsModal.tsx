@@ -30,6 +30,7 @@ const MemberRow = ({
   onChangeRole,
   onRemove,
   ownerId,
+  userPermission,
 }: {
   member: {
     userId: number;
@@ -41,6 +42,7 @@ const MemberRow = ({
   onChangeRole: (id: number, role: Role) => void;
   onRemove: (id: number) => void;
   ownerId: number | undefined;
+  userPermission: string;
 }) => {
   const { refs, floatingStyles } = useFloating({
     placement: 'bottom-start',
@@ -62,7 +64,7 @@ const MemberRow = ({
 
       <div className="flex items-center gap-2 sm:justify-between">
         <div className="relative min-w-30">
-          {isOwner ? (
+          {isOwner || userPermission === 'VIEWER' ? (
             <div className="w-full flex justify-between items-center h-10 rounded-lg border border-violet-300 px-3 text-violet-500 cursor-default">
               <span>{ROLE_LABEL[member.permission]}</span>
             </div>
@@ -103,10 +105,12 @@ const MemberRow = ({
         <button
           onClick={() => onRemove(member.userId)}
           className={`p-2 rounded-lg ${
-            isOwner ? 'cursor-not-allowed opacity-50' : 'hover:bg-rose-50'
+            isOwner || userPermission === 'VIEWER'
+              ? 'cursor-not-allowed opacity-50'
+              : 'hover:bg-rose-50'
           }`}
           aria-label="멤버 삭제"
-          disabled={isOwner}
+          disabled={isOwner || userPermission === 'VIEWER'}
         >
           <Trash2 className="w-5 h-5 text-rose-500" />
         </button>
@@ -119,6 +123,7 @@ const MemberSettingsModal = () => {
   const dispatch = useAppDispatch();
   const members = useAppSelector((state) => state.member.memberList);
   const groupId = useAppSelector(selectSelectedGroup);
+  const userPermission = useAppSelector((state) => state.user.permission);
 
   const inviteCode = useAppSelector((state) => state.invitecode.inviteCode);
   const [loading, setLoading] = useState(false);
@@ -145,9 +150,13 @@ const MemberSettingsModal = () => {
     };
 
     if (groupId) {
+      if (userPermission === 'VIEWER') {
+        dispatch(setInviteCode(''));
+        return;
+      }
       fetchInviteCode();
     }
-  }, [groupId, dispatch]);
+  }, [groupId, dispatch, userPermission]);
 
   const handleGenerateCode = async () => {
     if (!groupId) return;
@@ -248,8 +257,12 @@ const MemberSettingsModal = () => {
           ) : (
             <button
               onClick={handleGenerateCode}
-              disabled={loading}
-              className="px-4 py-2 rounded-md bg-violet-600 text-white hover:bg-violet-700 text-sm"
+              disabled={loading || userPermission === 'VIEWER'}
+              className={`px-4 py-2 rounded-md bg-violet-600 text-white ${
+                loading || userPermission === 'VIEWER'
+                  ? 'cursor-not-allowed opacity-50'
+                  : 'hover:bg-violet-700'
+              } text-sm`}
             >
               {loading ? '발급 중...' : '코드 생성'}
             </button>
@@ -260,7 +273,12 @@ const MemberSettingsModal = () => {
           <h3 className="font-medium text-gray-800">QR 코드 초대</h3>
           <button
             onClick={() => dispatch(setQRcodeModal(true))}
-            className="px-4 py-2 rounded-md border border-[#E6E5F2] text-sm hover:bg-gray-100 flex items-center gap-2"
+            disabled={userPermission === 'VIEWER'}
+            className={`px-4 py-2 rounded-md border border-[#E6E5F2] text-sm ${
+              userPermission === 'VIEWER'
+                ? 'cursor-not-allowed opacity-50'
+                : 'hover:bg-gray-100'
+            } flex items-center gap-2`}
           >
             <QrCode className="w-4 h-4" />
             QR 보기
@@ -277,6 +295,7 @@ const MemberSettingsModal = () => {
             onChangeRole={handleChangeRole}
             onRemove={handleRemove}
             ownerId={ownerId}
+            userPermission={userPermission}
           />
         ))}
       </div>

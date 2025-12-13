@@ -5,6 +5,11 @@ import toast from 'react-hot-toast';
 import { Eye, EyeOff } from 'lucide-react';
 
 const AuthPage = () => {
+  // 마우스 로딩
+  const setGlobalCursor = (type: 'wait' | 'default') => {
+    document.body.style.cursor = type;
+  };
+
   const navigate = useNavigate();
   const [tab, setTab] = useState<'login' | 'register'>('login');
   const [nickname, setNickname] = useState('');
@@ -54,6 +59,7 @@ const AuthPage = () => {
 
     if (tab === 'login') {
       try {
+        setGlobalCursor('wait');
         const res = await axios.post(
           'https://www.marksphere.link/api/auth/login',
           { username: nickname, password },
@@ -75,6 +81,8 @@ const AuthPage = () => {
       } catch (err) {
         console.error('axios 에러:', err);
         toast.error('로그인에 실패했습니다.\n 다시 시도해주세요.');
+      } finally {
+        setGlobalCursor('default');
       }
     } else {
       if (password !== passwordConfirm) {
@@ -83,6 +91,7 @@ const AuthPage = () => {
       }
 
       try {
+        setGlobalCursor('wait');
         await axios.post('https://www.marksphere.link/api/auth/register', {
           username: nickname,
           password,
@@ -100,6 +109,8 @@ const AuthPage = () => {
             toast.error('회원가입에 실패했습니다. 다시 시도해주세요.');
           }
         }
+      } finally {
+        setGlobalCursor('default');
       }
     }
   };

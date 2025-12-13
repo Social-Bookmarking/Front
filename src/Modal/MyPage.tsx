@@ -27,6 +27,10 @@ import { selectSelectedGroup } from '../Util/groupSlice';
 import { setOwnershipTransferModal } from '../Util/modalSlice';
 
 const MyPage = () => {
+  const setGlobalCursor = (type: 'wait' | 'default') => {
+    document.body.style.cursor = type;
+  };
+
   const [tab, setTab] = useState<'profile' | 'security' | 'myBookmark'>(
     'profile'
   );
@@ -34,7 +38,7 @@ const MyPage = () => {
 
   const user = useAppSelector((state) => state.user);
   const [nickname, setNickname] = useState('');
-  const [imageKey, setImageKey] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [isImageDeleted, setIsImageDeleted] = useState(false);
   const selectedGroupId = useAppSelector(selectSelectedGroup);
@@ -100,29 +104,8 @@ const MyPage = () => {
 
     try {
       setUploading(true);
-
       setPreviewUrl(URL.createObjectURL(file));
-
-      const res = await axios.get(
-        `https://www.marksphere.link/api/me/profile/upload-url`,
-        {
-          params: { fileName: file.name },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
-
-      const { presignedUrl, fileKey } = res.data;
-
-      // presigned URL에 PUT으로 업로드
-      await axios.put(presignedUrl, file, {
-        headers: { 'Content-Type': file.type },
-      });
-
-      // 성공하면 imageKey 업데이트
-      setImageKey(fileKey);
-      console.log(fileKey);
+      setImageFile(file);
       setIsImageDeleted(false);
     } catch (err) {
       console.log(err);
@@ -151,40 +134,61 @@ const MyPage = () => {
       });
   };
 
-  const handleSaveProfile = () => {
-    const payload: Partial<{ nickname: string; imageKey: string }> = {};
-
+  const handleSaveProfile = async () => {
     if (!nickname.trim()) {
       toast.error('닉네임을 입력해주세요');
       return;
     }
 
+    const payload: Partial<{ nickname: string; imageKey: string }> = {};
+
     if (user.nickname !== nickname.trim()) {
       payload.nickname = nickname.trim();
     }
 
-    // 이미지가 새로 업로드 되었거나 삭제된 경우에만 보냄
-    if (imageKey) {
-      payload.imageKey = imageKey; // 새 이미지 키
-    } else if (isImageDeleted) {
-      payload.imageKey = '';
+    try {
+      setUploading(true);
+      setGlobalCursor('wait');
+      if (imageFile) {
+        const res = await axios.get(
+          `https://www.marksphere.link/api/me/profile/upload-url`,
+          {
+            params: { fileName: imageFile.name },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        );
+
+        const { presignedUrl, fileKey } = res.data;
+
+        await axios.put(presignedUrl, imageFile, {
+          headers: { 'Content-Type': imageFile.type },
+        });
+
+        payload.imageKey = fileKey;
+      } else if (isImageDeleted) {
+        // 기본 이미지로 변경
+        payload.imageKey = '';
+      }
+
+      dispatch(updateUserInfo(payload))
+        .unwrap()
+        .then(() => {
+          dispatch(fetchUserInfo());
+          setPreviewUrl(null);
+          setImageFile(null);
+          setIsImageDeleted(false);
+          if (selectedGroupId !== null) {
+            dispatch(fetchMembers(selectedGroupId));
+          }
+        });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploading(false);
+      setGlobalCursor('default');
     }
-
-    console.log(payload);
-
-    dispatch(updateUserInfo(payload))
-      .unwrap()
-      .then(() => {
-        dispatch(fetchUserInfo());
-        setPreviewUrl(null);
-        setImageKey('');
-        setIsImageDeleted(false);
-        if (selectedGroupId !== null) {
-          dispatch(fetchMembers(selectedGroupId));
-        }
-      });
-
-    // dispatch(setMyPage(false));
   };
 
   const handleLogout = async () => {
@@ -233,7 +237,7 @@ const MyPage = () => {
   };
 
   return (
-    <div className="w-[50vw] min-w-sm max-h-[80vw] flex flex-col overflow-auto scrollbar-hidden space-y-5">
+    <div className="w-[50vw] min-w-sm flex flex-col overflow-auto scrollbar-hidden space-y-5">
       <h2 className="text-xl font-semibold text-violet-600 flex items-center gap-2">
         <User className="w-5 h-5" /> 마이페이지
       </h2>
@@ -296,7 +300,7 @@ const MyPage = () => {
                 onClick={(e) => {
                   e.stopPropagation();
                   setPreviewUrl(null);
-                  setImageKey('');
+                  setImageFile(null);
                   setIsImageDeleted(true);
                 }}
               >

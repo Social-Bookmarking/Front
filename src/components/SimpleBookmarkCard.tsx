@@ -48,7 +48,7 @@ const SimpleBookmarkCard = ({
       <div className="relative p-4 flex flex-col justify-between h-[150px]">
         <div>
           <div className="flex items-start justify-between mb-2">
-            <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-violet-700">
+            <h3 className="text-sm font-semibold text-gray-900 truncate group-hover:text-violet-700">
               {title}
             </h3>
             <ExternalLink
@@ -56,7 +56,10 @@ const SimpleBookmarkCard = ({
               onClick={handleOpenNewTap}
             />
           </div>
-          <p className="text-xs text-gray-500 mb-2 line-clamp-2">
+          <p
+            className="text-xs text-gray-500 mb-2 line-clamp-2"
+            style={{ whiteSpace: 'normal', overflow: 'hidden' }}
+          >
             {description}
           </p>
           {/* 태그 표시 */}

@@ -21,11 +21,12 @@ import {
   removeMarker,
   toggleOpen,
   resetMarkers,
-  incrementCounter,
 } from '../Util/bookmarkMarkerSlice';
 import { updateBookmark } from '../Util/bookmarkSlice';
 import toast from 'react-hot-toast';
 import { selectSelectedId } from '../Util/categorySlice';
+import ConfirmBox from './ConfirmBox';
+import markerImg from '../assets/img/default/marker.png';
 
 interface Place {
   id: string;
@@ -47,16 +48,21 @@ const BookmarkMap = () => {
     (state) => state.group.selectedGroupId
   );
   const selectedCategory = useAppSelector(selectSelectedId);
+  const userPermission = useAppSelector((state) => state.user.permission);
 
   const markers = useAppSelector((state) => state.bookmarkMarker.markers);
   const openIds = useAppSelector((state) => state.bookmarkMarker.openIds);
   const counter = useAppSelector((state) => state.bookmarkMarker.counter);
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   const totalElements = bookmarks.filter(
     (b) => b.latitude != null && b.longitude != null
   ).length;
 
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [isDelete, setIsDelete] = useState<
+    null | 'markerDelete' | 'bookmarkDelete'
+  >(null);
 
   useEffect(() => {
     if (!selectedGroupId || !selectedCategory) return;
@@ -170,12 +176,14 @@ const BookmarkMap = () => {
     map.setCenter(center);
     map.setLevel(2);
 
-    dispatch(
-      addMarker({
-        lat,
-        lng,
-      })
-    );
+    if (userPermission !== 'VIEWER') {
+      dispatch(
+        addMarker({
+          lat,
+          lng,
+        })
+      );
+    }
   };
 
   // 북마크 검색 -> 이동
@@ -264,15 +272,15 @@ const BookmarkMap = () => {
             onCreate={setMap}
             onClick={(_, MouseEvent) => {
               const latlng = MouseEvent.latLng;
-
-              resetClusterer();
-              dispatch(
-                addMarker({
-                  lat: latlng.getLat(),
-                  lng: latlng.getLng(),
-                })
-              );
-              dispatch(incrementCounter());
+              if (userPermission !== 'VIEWER') {
+                resetClusterer();
+                dispatch(
+                  addMarker({
+                    lat: latlng.getLat(),
+                    lng: latlng.getLng(),
+                  })
+                );
+              }
             }}
           >
             {/* 마커 모달 */}
@@ -284,25 +292,40 @@ const BookmarkMap = () => {
                 clustererRef.current = c;
               }}
             >
-              {markers.map((m) => (
-                <MapMarker
-                  key={m.id}
-                  position={m.position}
-                  onClick={() => {
-                    if (map) {
-                      if (map && map.getLevel() >= 3) {
-                        map.setLevel(2);
+              {markers.map((m) => {
+                const isHovered = hoveredId === m.id;
+
+                return (
+                  <MapMarker
+                    key={m.id}
+                    position={m.position}
+                    image={{
+                      src: markerImg,
+                      size: isHovered
+                        ? { width: 44, height: 44 }
+                        : { width: 36, height: 36 },
+                      options: {
+                        offset: isHovered ? { x: 22, y: 44 } : { x: 18, y: 36 },
+                      },
+                    }}
+                    onMouseOver={() => setHoveredId(m.id)}
+                    onMouseOut={() => setHoveredId(null)}
+                    onClick={() => {
+                      if (map) {
+                        if (map && map.getLevel() >= 3) {
+                          map.setLevel(2);
+                        }
+                        const center = new kakao.maps.LatLng(
+                          m.position.lat,
+                          m.position.lng
+                        );
+                        map.setCenter(center);
+                        dispatch(toggleOpen(m.id));
                       }
-                      const center = new kakao.maps.LatLng(
-                        m.position.lat,
-                        m.position.lng
-                      );
-                      map.setCenter(center);
-                      dispatch(toggleOpen(m.id));
-                    }
-                  }}
-                />
-              ))}
+                    }}
+                  />
+                );
+              })}
             </MarkerClusterer>
             {markers.map(
               (m) =>
@@ -331,11 +354,26 @@ const BookmarkMap = () => {
                             <div key={bid} className="relative">
                               <SimpleBookmarkCard {...b} />
                               <button
-                                className="absolute top-2 right-2 text-red-500"
-                                onClick={() => handleRemove(b.bookmarkId)}
+                                className={`absolute top-2 right-2 ${
+                                  userPermission === 'VIEWER'
+                                    ? 'cursor-not-allowed opacity-50'
+                                    : 'hover:bg-gray-500'
+                                } text-red-500 rounded`}
+                                disabled={userPermission === 'VIEWER'}
+                                onClick={() => setIsDelete('bookmarkDelete')}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
+                              {isDelete === 'bookmarkDelete' && (
+                                <ConfirmBox
+                                  message="정말 삭제 하시겠습니까?"
+                                  onConfirm={() => {
+                                    handleRemove(b.bookmarkId);
+                                    setIsDelete(null);
+                                  }}
+                                  onCancel={() => setIsDelete(null)}
+                                />
+                              )}
                             </div>
                           );
                         })}
@@ -343,7 +381,12 @@ const BookmarkMap = () => {
 
                       {/* 북마크 추가 버튼 */}
                       <button
-                        className="mt-2 px-2 py-1 bg-violet-500 text-white rounded text-xs"
+                        className={`mt-2 px-2 py-1 bg-violet-500 ${
+                          userPermission === 'VIEWER'
+                            ? 'cursor-not-allowed opacity-50'
+                            : 'hover:bg-violet-600'
+                        } text-white rounded text-xs`}
+                        disabled={userPermission === 'VIEWER'}
                         onClick={() =>
                           dispatch(
                             setBookMarkMapAdd({
@@ -359,24 +402,37 @@ const BookmarkMap = () => {
                       </button>
                       <div className="flex w-full items-center justify-between mt-2 space-x-2 text-xs">
                         <button
-                          className="bg-red-500 w-full text-white px-2 py-1 rounded"
-                          onClick={async () => {
-                            if (m.bookmarks.length > 0) {
-                              const bid = m.bookmarks[0];
-                              handleRemove(bid);
-                            }
-                            // 마커 제거
-                            dispatch(removeMarker(m.id));
-                          }}
+                          className={`bg-red-500 w-full ${
+                            userPermission === 'VIEWER'
+                              ? 'cursor-not-allowed opacity-50'
+                              : 'hover:bg-red-600'
+                          } text-white px-2 py-1 rounded`}
+                          disabled={userPermission === 'VIEWER'}
+                          onClick={() => setIsDelete('markerDelete')}
                         >
                           마커 삭제
                         </button>
                         <button
-                          className="bg-gray-200 w-full px-2 py-1 rounded"
+                          className="bg-gray-200 w-full px-2 py-1 hover:bg-gray-300 rounded"
                           onClick={() => dispatch(toggleOpen(m.id))}
                         >
                           닫기
                         </button>
+                        {isDelete === 'markerDelete' && (
+                          <ConfirmBox
+                            message="정말 삭제 하시겠습니까?"
+                            onConfirm={async () => {
+                              if (m.bookmarks.length > 0) {
+                                const bid = m.bookmarks[0];
+                                handleRemove(bid);
+                              }
+                              // 마커 제거
+                              dispatch(removeMarker(m.id));
+                              setIsDelete(null);
+                            }}
+                            onCancel={() => setIsDelete(null)}
+                          />
+                        )}
                       </div>
                     </div>
                   </CustomOverlayMap>

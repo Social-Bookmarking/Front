@@ -38,7 +38,7 @@ import {
   changeGroup,
 } from '../Util/groupSlice';
 import { fetchMembers } from '../Util/memberSlice';
-import { fetchUserInfo } from '../Util/user';
+import { fetchUserInfo, getPermission } from '../Util/user';
 import {
   Listbox,
   ListboxButton,
@@ -72,6 +72,7 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
 
   useEffect(() => {
     if (selectedGroupId) {
+      dispatch(getPermission(selectedGroupId));
       dispatch(fetchMembers(selectedGroupId));
       dispatch(fetchCategories(selectedGroupId));
       dispatch(fetchGroupDetail(selectedGroupId));
@@ -97,6 +98,7 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
         <Avatar name={user.nickname} src={user.profileImageUrl} />
         <div className="flex flex-col pl-3">
           <p className="font-bold truncate">{user.nickname}</p>
+          <p className="text-xs text-gray-500 truncate">{user.permission}</p>
         </div>
       </div>
       {deletionMessage && (
@@ -202,22 +204,27 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
                 <PlusCircle className="w-4 h-4 text-violet-500" />
                 그룹 추가
               </ListboxOption>
-              <ListboxOption
-                value="modify"
-                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
-                onClick={() => dispatch(setGroupModify(true))}
-              >
-                <Pencil className="w-4 h-4 text-violet-500" />
-                그룹 수정
-              </ListboxOption>
-              <ListboxOption
-                value="delete"
-                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
-                onClick={() => dispatch(setGroupDeleteModal(true))}
-              >
-                <Trash2 className="w-4 h-4 text-violet-500" />
-                그룹 삭제
-              </ListboxOption>
+              {user.permission === 'ADMIN' && (
+                <>
+                  <ListboxOption
+                    value="modify"
+                    className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
+                    onClick={() => dispatch(setGroupModify(true))}
+                  >
+                    <Pencil className="w-4 h-4 text-violet-500" />
+                    그룹 수정
+                  </ListboxOption>
+                  <ListboxOption
+                    value="delete"
+                    className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
+                    onClick={() => dispatch(setGroupDeleteModal(true))}
+                  >
+                    <Trash2 className="w-4 h-4 text-violet-500" />
+                    그룹 삭제
+                  </ListboxOption>
+                </>
+              )}
+
               <ListboxOption
                 value="exit"
                 className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"

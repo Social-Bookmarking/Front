@@ -31,13 +31,14 @@ const Header = () => {
   const dispatch = useAppDispatch();
   const members = useAppSelector((state) => state.member.memberList);
   const membersNumber = members.length;
+  const userPermission = useAppSelector((state) => state.user.permission);
 
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b-2 border-[#E6E5F2] bg-[#fafafa]">
       <div className="flex flex-col items-start gap-3">
         {/* 그라데이션 넣기 */}
         <h1 className="text-xl font-semibold bg-gradient-to-r from-violet-600 to-blue-500 bg-clip-text text-transparent">
-          내 북마크 워크스페이스
+          북마크 워크스페이스
         </h1>
         <div className="px-2 py-0.5 text-xs bg-[#E6E5F2] rounded-full">
           {`멤버 ${membersNumber}명`}
@@ -75,22 +76,26 @@ const Header = () => {
                 <PlusCircle className="w-4 h-4 text-violet-500" />
                 그룹 추가
               </ListboxOption>
-              <ListboxOption
-                value="modify"
-                className="cursor-pointer text-sm select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
-                onClick={() => dispatch(setGroupModify(true))}
-              >
-                <Pencil className="w-4 h-4 text-violet-500" />
-                그룹 수정
-              </ListboxOption>
-              <ListboxOption
-                value="delete"
-                className="cursor-pointer text-sm select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
-                onClick={() => dispatch(setGroupDeleteModal(true))}
-              >
-                <Trash2 className="w-4 h-4 text-violet-500" />
-                그룹 삭제
-              </ListboxOption>
+              {userPermission === 'ADMIN' && (
+                <>
+                  <ListboxOption
+                    value="modify"
+                    className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
+                    onClick={() => dispatch(setGroupModify(true))}
+                  >
+                    <Pencil className="w-4 h-4 text-violet-500" />
+                    그룹 수정
+                  </ListboxOption>
+                  <ListboxOption
+                    value="delete"
+                    className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
+                    onClick={() => dispatch(setGroupDeleteModal(true))}
+                  >
+                    <Trash2 className="w-4 h-4 text-violet-500" />
+                    그룹 삭제
+                  </ListboxOption>
+                </>
+              )}
               <ListboxOption
                 value="exit"
                 className="cursor-pointer text-sm select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
@@ -111,7 +116,12 @@ const Header = () => {
           </div>
         </Listbox>
         <button
-          className="flex items-center font-medium text-white gap-1 px-3 py-1.5 text-sm bg-violet-600 hover:bg-violet-700 rounded"
+          className={`flex items-center font-medium text-white gap-1 px-3 py-1.5 text-sm bg-violet-600 ${
+            userPermission === 'VIEWER'
+              ? 'cursor-not-allowed opacity-50'
+              : 'hover:bg-violet-700'
+          } rounded`}
+          disabled={userPermission === 'VIEWER'}
           onClick={() => dispatch(setBookMarkAdd(true))}
         >
           <Plus className="w-4 h-4" />

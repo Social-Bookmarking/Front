@@ -12,6 +12,7 @@ import {
 } from '../Util/categorySlice';
 import { setcategoryAdd } from '../Util/modalSlice';
 import { fetchBookmarks } from '../Util/bookmarkSlice';
+import ConfirmBox from './ConfirmBox';
 
 import {
   DragOverlay,
@@ -40,11 +41,13 @@ const SortableItem = ({
   onCommit,
   onCancel,
   onDelete,
+  userPermission,
 }: any) => {
   const { attributes, listeners, setNodeRef } = useSortable({ id: c.id });
+  const [isDelete, setIsDelete] = useState(false);
 
   // 전체(-1)은 드래그 비활성화
-  if (c.id === -1) {
+  if (c.id === -1 || userPermission === 'VIEWER') {
     return (
       <div
         className={`flex items-center justify-between rounded-lg border px-3 py-2 ${
@@ -137,11 +140,21 @@ const SortableItem = ({
               <Pencil className="w-4 h-4 text-gray-600" />
             </button>
             <button
-              onClick={() => onDelete(c.id)}
+              onClick={() => setIsDelete(true)}
               className="p-1 rounded hover:bg-gray-100"
             >
               <Trash2 className="w-4 h-4 text-rose-600" />
             </button>
+            {isDelete && (
+              <ConfirmBox
+                message="정말 삭제 하시겠습니까?"
+                onConfirm={() => {
+                  onDelete(c.id);
+                  setIsDelete(false);
+                }}
+                onCancel={() => setIsDelete(false)}
+              />
+            )}
           </>
         )}
       </div>
@@ -156,6 +169,7 @@ const CategoryManager = () => {
   const selectedGroupId = useAppSelector(
     (state) => state.group.selectedGroupId
   );
+  const userPermission = useAppSelector((state) => state.user.permission);
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [tempName, setTempName] = useState('');
@@ -241,7 +255,12 @@ const CategoryManager = () => {
         </div>
         <button
           onClick={onAdd}
-          className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md bg-violet-600 hover:bg-violet-700 text-white"
+          disabled={userPermission === 'VIEWER'}
+          className={`inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md bg-violet-600 ${
+            userPermission === 'VIEWER'
+              ? 'cursor-not-allowed opacity-50'
+              : 'hover:bg-violet-700'
+          } text-white`}
         >
           <Plus className="w-4 h-4" />새 카테고리
         </button>
@@ -269,6 +288,7 @@ const CategoryManager = () => {
                 onCommit={commit}
                 onCancel={cancel}
                 onDelete={onDelete}
+                userPermission={userPermission}
               />
             ))}
           </div>
