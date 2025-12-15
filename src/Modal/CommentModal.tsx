@@ -23,6 +23,8 @@ const CommentModal = () => {
     (state) => state.comments.repliesByComment
   );
 
+  const userPermission = useAppSelector((state) => state.user.permission);
+
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [showReplies, setShowReplies] = useState<Record<number, boolean>>({});
@@ -128,6 +130,7 @@ const CommentModal = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    const MAX_COMMENT_LENGTH = 100;
 
     if (replyTarget && input.startsWith('@')) {
       const mention = input.split(' ')[0]; // 닉네임
@@ -137,6 +140,14 @@ const CommentModal = () => {
         setInput(value.replace(/^@\S+\s?/, ''));
         return;
       }
+    }
+
+    if (value.length > MAX_COMMENT_LENGTH) {
+      toast.error(`${MAX_COMMENT_LENGTH}자까지만 입력할 수 있습니다.`, {
+        id: 'comment-length-error',
+      });
+      setInput(value.slice(0, MAX_COMMENT_LENGTH));
+      return;
     }
 
     setInput(value);
@@ -170,19 +181,21 @@ const CommentModal = () => {
                       minute: '2-digit',
                     })}
                   </span>
-                  <button
-                    className="text-xs text-red-500 hover:underline ml-2"
-                    onClick={() =>
-                      dispatch(
-                        deleteComment({
-                          commentId: c.commentId,
-                          bookmarkId: bookmarkId!,
-                        })
-                      )
-                    }
-                  >
-                    삭제
-                  </button>
+                  {userPermission !== 'VIEWER' && (
+                    <button
+                      className="text-xs text-red-500 hover:underline ml-2"
+                      onClick={() =>
+                        dispatch(
+                          deleteComment({
+                            commentId: c.commentId,
+                            bookmarkId: bookmarkId!,
+                          })
+                        )
+                      }
+                    >
+                      삭제
+                    </button>
+                  )}
                 </div>
                 <p className="text-sm">{c.content}</p>
                 <button
@@ -314,8 +327,12 @@ const CommentModal = () => {
         />
         <button
           onClick={() => handleAddComment()}
-          disabled={sending}
-          className="px-4 py-2 bg-violet-500 text-white rounded-full text-sm hover:bg-violet-600"
+          disabled={sending || userPermission === 'VIEWER'}
+          className={`px-4 py-2 bg-violet-500 text-white rounded-full text-sm ${
+            userPermission === 'VIEWER'
+              ? 'cursor-not-allowed opacity-50'
+              : 'hover:bg-violet-600'
+          }`}
         >
           {sending ? '등록 중...' : '등록'}
         </button>

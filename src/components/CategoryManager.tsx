@@ -28,6 +28,7 @@ import {
   arrayMove,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import toast from 'react-hot-toast';
 
 /* 개별 카테고리 항목 */
 const SortableItem = ({
@@ -94,7 +95,22 @@ const SortableItem = ({
         {editing ? (
           <input
             value={tempName}
-            onChange={(e) => setTempName(e.target.value)}
+            onChange={(e) => {
+              const MAX_CATEGORY_LENGTH = 20;
+              const value = e.target.value;
+
+              if (value.length > MAX_CATEGORY_LENGTH) {
+                toast.error(
+                  `제목은 ${MAX_CATEGORY_LENGTH}자까지만 저장됩니다.`,
+                  {
+                    id: 'title-length-error',
+                  }
+                );
+                setTempName(value.slice(0, MAX_CATEGORY_LENGTH));
+                return;
+              }
+              setTempName(value);
+            }}
             className="text-sm border rounded px-2 py-1 outline-none"
             autoFocus
             onClick={(e) => e.stopPropagation()}

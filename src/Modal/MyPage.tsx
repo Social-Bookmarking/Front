@@ -352,7 +352,22 @@ const MyPage = () => {
                 <input
                   type="text"
                   value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const MAX_NICKNAME_LENGTH = 20;
+
+                    if (value.length > MAX_NICKNAME_LENGTH) {
+                      toast.error(
+                        `닉네임은 ${MAX_NICKNAME_LENGTH}자까지만 저장됩니다.`,
+                        {
+                          id: 'nickname-length-error',
+                        }
+                      );
+                      setNickname(value.slice(0, MAX_NICKNAME_LENGTH));
+                      return;
+                    }
+                    setNickname(value);
+                  }}
                   className="px-2 py-1 border border-[#E6E5F2] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
                 />
               </div>

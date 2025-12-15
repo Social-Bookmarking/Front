@@ -65,7 +65,6 @@ const AuthPage = () => {
           { username: nickname, password },
           { withCredentials: true }
         );
-        console.log(res);
 
         localStorage.setItem('token', res.data.accessToken);
         window.dispatchEvent(new Event('storage'));
@@ -153,7 +152,22 @@ const AuthPage = () => {
               placeholder="닉네임을 입력하세요"
               className="w-full border border-[#E6E5F2] rounded-md p-2 focus:ring focus:ring-blue-200"
               value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                const MAX_NICKNAME_LENGTH = 20;
+
+                if (value.length > MAX_NICKNAME_LENGTH) {
+                  toast.error(
+                    `닉네임은 ${MAX_NICKNAME_LENGTH}자까지만 저장됩니다.`,
+                    {
+                      id: 'nickname-length-error',
+                    }
+                  );
+                  setNickname(value.slice(0, MAX_NICKNAME_LENGTH));
+                  return;
+                }
+                setNickname(value);
+              }}
             />
           </div>
 

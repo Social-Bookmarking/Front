@@ -276,7 +276,23 @@ const BookmarkAddModal = () => {
               type="text"
               value={title}
               placeholder={ogInfo.title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                const MAX_TITLE_LENGTH = 100;
+                const value = e.target.value;
+
+                if (value.length > MAX_TITLE_LENGTH) {
+                  toast.error(
+                    `제목은 ${MAX_TITLE_LENGTH}자까지만 저장됩니다.`,
+                    {
+                      id: 'title-length-error',
+                    }
+                  );
+                  setTitle(value.slice(0, MAX_TITLE_LENGTH));
+                  return;
+                }
+
+                setTitle(value);
+              }}
               className="w-full px-3 py-2 border border-[#E6E5F2] rounded-lg"
             />
           </div>
@@ -289,7 +305,23 @@ const BookmarkAddModal = () => {
             <textarea
               value={description}
               placeholder={ogInfo.description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                const MAX_DESCRIPTION_LENGTH = 5000;
+                const value = e.target.value;
+
+                if (value.length > MAX_DESCRIPTION_LENGTH) {
+                  toast.error(
+                    `설명은 ${MAX_DESCRIPTION_LENGTH}자까지만 저장됩니다.`,
+                    {
+                      id: 'description-length-error',
+                    }
+                  );
+                  setDescription(value.slice(0, MAX_DESCRIPTION_LENGTH));
+                  return;
+                }
+
+                setDescription(value);
+              }}
               className="w-full h-30 px-3 py-2 border border-[#E6E5F2] rounded-lg"
             />
           </div>

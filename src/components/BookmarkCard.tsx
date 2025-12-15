@@ -51,6 +51,7 @@ const BookmarkCard = ({
   const categories = useAppSelector(selectCategories);
   const categoryName = categories.find((c) => c.id === categoryId)?.name;
   const currentGroupId = useAppSelector(selectSelectedGroup);
+  const userPermission = useAppSelector((state) => state.user.permission);
 
   const handleLike = async (nextLiked: boolean) => {
     try {
@@ -111,23 +112,31 @@ const BookmarkCard = ({
           {categoryName}
         </span>
         <MessageCircleMore
-          className="absolute text-gray-400 w-4 h-4 bottom-3 right-15 hover:text-violet-700"
+          className={`absolute text-gray-400 w-4 h-4 ${
+            userPermission === 'VIEWER'
+              ? 'bottom-3 right-3'
+              : 'bottom-3 right-15'
+          } hover:text-violet-700`}
           onClick={() =>
             dispatch(setCommentModal({ open: true, bookmarkId: bookmarkId }))
           }
         />
-        <Pencil
-          className="absolute text-gray-400 w-4 h-4 bottom-3 right-9 hover:text-violet-700"
-          onClick={() =>
-            dispatch(
-              setBookMarkModifyModal({ open: true, bookmardId: bookmarkId })
-            )
-          }
-        />
-        <Trash2
-          className="absolute text-gray-400 w-4 h-4 bottom-3 right-3 hover:text-violet-700"
-          onClick={() => setIsDelete(true)}
-        />
+        {userPermission !== 'VIEWER' && (
+          <>
+            <Pencil
+              className="absolute text-gray-400 w-4 h-4 bottom-3 right-9 hover:text-violet-700"
+              onClick={() =>
+                dispatch(
+                  setBookMarkModifyModal({ open: true, bookmardId: bookmarkId })
+                )
+              }
+            />
+            <Trash2
+              className="absolute text-gray-400 w-4 h-4 bottom-3 right-3 hover:text-violet-700"
+              onClick={() => setIsDelete(true)}
+            />
+          </>
+        )}
       </div>
       <div className="relative p-4 flex flex-col justify-between h-[150px]">
         <div>

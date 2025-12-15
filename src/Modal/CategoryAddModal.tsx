@@ -3,6 +3,7 @@ import { createCategory } from '../Util/categorySlice';
 import { selectSelectedGroup } from '../Util/groupSlice';
 import { setcategoryAdd } from '../Util/modalSlice';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const CategoryAddModal = () => {
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -23,7 +24,19 @@ const CategoryAddModal = () => {
         <input
           type="text"
           value={newCategoryName}
-          onChange={(e) => setNewCategoryName(e.target.value)}
+          onChange={(e) => {
+            const MAX_CATEGORY_LENGTH = 20;
+            const value = e.target.value;
+
+            if (value.length > MAX_CATEGORY_LENGTH) {
+              toast.error(`제목은 ${MAX_CATEGORY_LENGTH}자까지만 저장됩니다.`, {
+                id: 'title-length-error',
+              });
+              setNewCategoryName(value.slice(0, MAX_CATEGORY_LENGTH));
+              return;
+            }
+            setNewCategoryName(value);
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') onAdd(selectedGroupId, newCategoryName);
           }}
