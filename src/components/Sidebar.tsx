@@ -64,6 +64,7 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
   const selectedGroup = groups.find((g) => g.teamId === selectedGroupId);
   const user = useAppSelector((state) => state.user);
   const groupDetail = useAppSelector((state) => state.groupDetail.detail);
+  const hasGroup = groups.length > 0;
 
   useEffect(() => {
     dispatch(fetchGroups());
@@ -72,6 +73,7 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
 
   useEffect(() => {
     if (selectedGroupId) {
+      console.log(selectedGroupId);
       dispatch(getPermission(selectedGroupId));
       dispatch(fetchMembers(selectedGroupId));
       dispatch(fetchCategories(selectedGroupId));
@@ -111,16 +113,14 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
         <Listbox
           value={selectedGroupId ?? 0}
           onChange={(id) => dispatch(changeGroup(id))}
+          disabled={!hasGroup}
         >
           <div className="relative">
             <ListboxButton className="flex items-center justify-between w-full px-3 py-2 text-left focus:outline-none focus:ring-2 focus:ring-violet-300">
               <span className="flex items-center gap-2 font-semibold text-gray-800 ">
                 <FolderOpen className="w-5 h-5 text-violet-500" />
-                <span
-                  className="block max-w-[160px] truncate"
-                  title={selectedGroup?.groupName ?? '북마크 스페이스'}
-                >
-                  {selectedGroup?.groupName ?? '북마크 스페이스'}
+                <span className="block max-w-[160px] truncate">
+                  {hasGroup ? selectedGroup?.groupName : '그룹이 없습니다'}
                 </span>
               </span>
               <ChevronDown className="w-4 h-4 text-gray-500" />
@@ -224,15 +224,16 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
                   </ListboxOption>
                 </>
               )}
-
-              <ListboxOption
-                value="exit"
-                className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
-                onClick={() => dispatch(setGroupExitModal(true))}
-              >
-                <LogOut className="w-4 h-4 text-violet-500" />
-                그룹 탈퇴
-              </ListboxOption>
+              {selectedGroupId && (
+                <ListboxOption
+                  value="exit"
+                  className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
+                  onClick={() => dispatch(setGroupExitModal(true))}
+                >
+                  <LogOut className="w-4 h-4 text-violet-500" />
+                  그룹 탈퇴
+                </ListboxOption>
+              )}
               <ListboxOption
                 value="MyPage"
                 className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"

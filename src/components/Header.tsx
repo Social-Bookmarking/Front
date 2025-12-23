@@ -26,12 +26,14 @@ import {
   ListboxOption,
   ListboxOptions,
 } from '@headlessui/react';
+import { selectSelectedGroup } from '../Util/groupSlice';
 
 const Header = () => {
   const dispatch = useAppDispatch();
   const members = useAppSelector((state) => state.member.memberList);
   const membersNumber = members.length;
   const userPermission = useAppSelector((state) => state.user.permission);
+  const selectedGroupId = useAppSelector(selectSelectedGroup);
 
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b-2 border-[#E6E5F2] bg-[#fafafa]">
@@ -96,14 +98,16 @@ const Header = () => {
                   </ListboxOption>
                 </>
               )}
-              <ListboxOption
-                value="exit"
-                className="cursor-pointer text-sm select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
-                onClick={() => dispatch(setGroupExitModal(true))}
-              >
-                <LogOut className="w-4 h-4 text-violet-500" />
-                그룹 탈퇴
-              </ListboxOption>
+              {selectedGroupId && (
+                <ListboxOption
+                  value="exit"
+                  className="cursor-pointer select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
+                  onClick={() => dispatch(setGroupExitModal(true))}
+                >
+                  <LogOut className="w-4 h-4 text-violet-500" />
+                  그룹 탈퇴
+                </ListboxOption>
+              )}
               <ListboxOption
                 value="MyPage"
                 className="cursor-pointer text-sm select-none px-3 py-2 hover:bg-violet-50 text-gray-800 flex items-center gap-2"
