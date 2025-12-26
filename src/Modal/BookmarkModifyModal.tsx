@@ -161,6 +161,7 @@ const BookmarkModifyModal = () => {
           <label className="cursor-pointer flex flex-col items-center space-y-3">
             {previewUrl ? (
               <img
+                referrerPolicy="no-referrer"
                 src={previewUrl}
                 alt="미리보기"
                 className="w-full h-40 object-cover rounded-lg"

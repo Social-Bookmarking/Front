@@ -86,9 +86,10 @@ const BookmarkCard = ({
   };
 
   return (
-    <div className="group bg-[#fafafa] border-2 border-[#E6E5F2] rounded-2xl shadow-sm w-full min-w-[200px] max-w-[250px]">
+    <div className="group bg-[#fafafa] border-2 border-[#E6E5F2] rounded-2xl shadow-sm w-[220px]">
       <div className="relative overflow-hidden rounded-t-2xl">
         <img
+          referrerPolicy="no-referrer"
           src={imageUrl}
           alt={title}
           className="w-full h-36 object-cover transition-transform duration-300 group-hover:scale-120"

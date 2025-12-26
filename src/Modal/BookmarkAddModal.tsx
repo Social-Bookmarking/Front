@@ -260,6 +260,7 @@ const BookmarkAddModal = () => {
         <div className="mt-4 space-y-4 p-1 h-[400px]">
           {ogInfo.image && (
             <img
+              referrerPolicy="no-referrer"
               src={ogInfo.image}
               alt={title}
               className="w-full h-40

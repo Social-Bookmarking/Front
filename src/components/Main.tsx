@@ -95,9 +95,9 @@ const Main = () => {
       </div>
 
       {/* 북마크 카드 목록 */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div className="w-full flex items-center">
         {isEmpty ? (
-          <div className="col-span-full flex justify-center py-10">
+          <div className="w-full flex justify-center py-10">
             <div className="flex flex-col items-center text-center text-gray-500 max-w-sm">
               <div className="w-14 h-14 mb-4 rounded-full bg-violet-50 flex items-center justify-center">
                 <Bookmark className="w-7 h-7 text-violet-500" />
@@ -127,9 +127,11 @@ const Main = () => {
             </div>
           </div>
         ) : (
-          bookmarks.map((bookmark) => (
-            <BookmarkCard key={bookmark.bookmarkId} {...bookmark} />
-          ))
+          <div className="flex flex-wrap gap-2 justify-start items-center">
+            {bookmarks.map((bookmark) => (
+              <BookmarkCard key={bookmark.bookmarkId} {...bookmark} />
+            ))}
+          </div>
         )}
       </div>
 
