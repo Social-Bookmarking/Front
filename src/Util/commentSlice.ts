@@ -58,7 +58,6 @@ export const fetchComments = createAsyncThunk(
         },
       }
     );
-    console.log(data);
     return { bookmarkId, ...data, cursor };
   }
 );
@@ -76,7 +75,6 @@ export const fetchReplies = createAsyncThunk(
         },
       }
     );
-    console.log(data);
     return { commentId, ...data, cursor };
   }
 );
@@ -196,7 +194,7 @@ const commentSlice = createSlice({
         state.repliesByComment[rootCommentId] = {
           data: [reply],
           nextCursor: null,
-          hasNext: true,
+          hasNext: false,
           loading: false,
           error: null,
         };

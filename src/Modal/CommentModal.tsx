@@ -69,7 +69,7 @@ const CommentModal = () => {
       if (replyTarget) {
         const replyBaseId = rootTarget ?? replyTarget;
         const replyState = repliesState[replyBaseId];
-        const isLastPage = replyState ? !replyState.hasNext : false;
+        const isLastPage = replyState ? !replyState.hasNext : true;
 
         await dispatch(
           addComment({
