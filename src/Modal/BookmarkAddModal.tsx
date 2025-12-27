@@ -153,12 +153,16 @@ const BookmarkAddModal = () => {
           });
         }
       } else {
-        setOgInfo(data);
+        setOgInfo({
+          title: data.title.slice(0, 100) ?? '',
+          description: data.description.slice(0, 5000) ?? '',
+          image: data.image,
+        });
         setImageKey(''); // og 이미지 직접 사용할 경우 imageKey 비움
       }
 
-      setTitle(data.title || '');
-      setDescription(data.description || '');
+      setTitle(data.title.slice(0, 100) || '');
+      setDescription(data.description.slice(0, 5000) || '');
     } catch (err) {
       console.error(err);
 
