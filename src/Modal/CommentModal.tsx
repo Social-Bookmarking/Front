@@ -12,15 +12,15 @@ import toast from 'react-hot-toast';
 const CommentModal = () => {
   const dispatch = useAppDispatch();
   const bookmarkId = useAppSelector(
-    (state) => state.modal.commentModalbookmarkId
+    (state) => state.modal.commentModalbookmarkId,
   );
 
   const commentsState = useAppSelector(
-    (state) => state.comments.commentsByBookmark[bookmarkId ?? -1]
+    (state) => state.comments.commentsByBookmark[bookmarkId ?? -1],
   ) ?? { data: [], pageInfo: null, loading: false, error: null };
 
   const repliesState = useAppSelector(
-    (state) => state.comments.repliesByComment
+    (state) => state.comments.repliesByComment,
   );
 
   const userPermission = useAppSelector((state) => state.user.permission);
@@ -78,7 +78,7 @@ const CommentModal = () => {
             parentId: replyTarget,
             rootCommentId: rootTarget,
             isLastPage,
-          })
+          }),
         );
         setShowReplies((prev) => ({ ...prev, [replyTarget]: true }));
         setReplyTarget(null); // 초기화
@@ -91,13 +91,12 @@ const CommentModal = () => {
             parentId: null,
             rootCommentId: undefined,
             isLastPage,
-          })
+          }),
         );
       }
 
       setInput('');
-    } catch (error) {
-      console.error(error);
+    } catch {
       toast.error('댓글 등록 실패');
     } finally {
       setSending(false);
@@ -111,7 +110,7 @@ const CommentModal = () => {
       fetchComments({
         bookmarkId,
         cursor: commentsState.nextCursor ?? undefined,
-      })
+      }),
     );
   };
 
@@ -124,7 +123,7 @@ const CommentModal = () => {
       fetchReplies({
         commentId,
         cursor: replyState.nextCursor ?? undefined,
-      })
+      }),
     );
   };
 
@@ -189,7 +188,7 @@ const CommentModal = () => {
                           deleteComment({
                             commentId: c.commentId,
                             bookmarkId: bookmarkId!,
-                          })
+                          }),
                         )
                       }
                     >
@@ -256,7 +255,7 @@ const CommentModal = () => {
                                 commentId: r.commentId,
                                 bookmarkId: bookmarkId!,
                                 parentId: c.commentId,
-                              })
+                              }),
                             )
                           }
                         >

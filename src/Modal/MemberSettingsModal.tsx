@@ -139,12 +139,11 @@ const MemberSettingsModal = () => {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
-          }
+          },
         );
 
         dispatch(setInviteCode(inviteRes.data.code ?? null));
-      } catch (err) {
-        console.error(err);
+      } catch {
         dispatch(setInviteCode(''));
       }
     };
@@ -169,11 +168,10 @@ const MemberSettingsModal = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-        }
+        },
       );
       dispatch(setInviteCode(res.data.code));
-    } catch (err) {
-      console.error('초대 코드 생성 실패', err);
+    } catch {
       toast.error('오류 발생');
     } finally {
       setLoading(false);
@@ -200,7 +198,7 @@ const MemberSettingsModal = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-        }
+        },
       );
       toast.success('멤버를 방출했습니다.');
       dispatch(fetchMembers(groupId));

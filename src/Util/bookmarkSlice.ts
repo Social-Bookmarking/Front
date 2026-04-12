@@ -67,11 +67,10 @@ export const fetchBookmarks = createAsyncThunk<
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-      }
+      },
     );
-    console.log(data);
     return data;
-  }
+  },
 );
 
 export const updateBookmark = createAsyncThunk<
@@ -95,7 +94,7 @@ export const updateBookmark = createAsyncThunk<
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
-    }
+    },
   );
   // 서버는 응답을 안 주므로, 우리가 보낸 값 그대로 반환
   return { bookmarkId, ...updates, previewUrl };
@@ -111,7 +110,7 @@ export const deleteBookmark = createAsyncThunk<
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
-    }
+    },
   );
   await dispatch(fetchCategories(groupId));
 
@@ -130,7 +129,7 @@ const bookmarkSlice = createSlice({
     },
     addBookmark(state, action: PayloadAction<Bookmark>) {
       const exists = state.items.some(
-        (b) => b.bookmarkId === action.payload.bookmarkId
+        (b) => b.bookmarkId === action.payload.bookmarkId,
       );
       if (!exists) {
         state.items.unshift(action.payload);
@@ -159,7 +158,7 @@ const bookmarkSlice = createSlice({
       })
       .addCase(deleteBookmark.fulfilled, (state, action) => {
         state.items = state.items.filter(
-          (b) => b.bookmarkId !== action.payload
+          (b) => b.bookmarkId !== action.payload,
         );
       })
       .addCase(updateBookmark.fulfilled, (state, action) => {

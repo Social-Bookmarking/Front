@@ -13,10 +13,8 @@ import {
   LogOut,
   User,
 } from 'lucide-react';
-import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../Util/hook';
 import {
-  fetchCategories,
   selectCategories,
   selectSelectedId,
   selectCategory,
@@ -32,13 +30,10 @@ import {
   setGroupExitModal,
 } from '../Util/modalSlice';
 import {
-  fetchGroups,
   selectGroups,
   selectSelectedGroup,
   changeGroup,
 } from '../Util/groupSlice';
-import { fetchMembers } from '../Util/memberSlice';
-import { fetchUserInfo, getPermission } from '../Util/user';
 import {
   Listbox,
   ListboxButton,
@@ -46,7 +41,6 @@ import {
   ListboxOptions,
 } from '@headlessui/react';
 import Avatar from './Avatar';
-import { fetchGroupDetail } from '../Util/groupDetailSlice';
 import { differenceInHours, differenceInDays } from 'date-fns';
 
 type View = 'home' | 'map';
@@ -65,21 +59,6 @@ const Sidebar = ({ view, onNavigate }: SidebarProps) => {
   const user = useAppSelector((state) => state.user);
   const groupDetail = useAppSelector((state) => state.groupDetail.detail);
   const hasGroup = groups.length > 0;
-
-  useEffect(() => {
-    dispatch(fetchGroups());
-    dispatch(fetchUserInfo());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (selectedGroupId) {
-      console.log(selectedGroupId);
-      dispatch(getPermission(selectedGroupId));
-      dispatch(fetchMembers(selectedGroupId));
-      dispatch(fetchCategories(selectedGroupId));
-      dispatch(fetchGroupDetail(selectedGroupId));
-    }
-  }, [dispatch, selectedGroupId]);
 
   let deletionMessage: string | null = null;
   if (

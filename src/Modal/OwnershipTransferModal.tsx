@@ -18,7 +18,7 @@ import Avatar from '../Components/Avatar';
 const OwnershipTransferModal = () => {
   const dispatch = useAppDispatch();
   const { groups, currentIndex } = useAppSelector(
-    (state) => state.modal.ownershipTransferContext
+    (state) => state.modal.ownershipTransferContext,
   );
   const current = groups[currentIndex];
   const [members, setMembers] = useState<
@@ -42,13 +42,12 @@ const OwnershipTransferModal = () => {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
-          }
+          },
         );
         const allMembers = res.data.members || res.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setMembers(allMembers.filter((m: any) => m.name !== user));
-      } catch (err) {
-        console.error(err);
+      } catch {
         toast.error('멤버 정보를 불러오지 못했습니다.');
       }
     };
@@ -64,7 +63,7 @@ const OwnershipTransferModal = () => {
         { newOwnerId: selected },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        }
+        },
       );
 
       toast.success(`"${current.groupName}"의 소유권이 이전되었습니다.`);
@@ -87,8 +86,7 @@ const OwnershipTransferModal = () => {
             window.location.href = '/login';
           });
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('소유권 이전 중 오류가 발생했습니다.');
     }
   };

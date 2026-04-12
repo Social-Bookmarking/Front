@@ -1,5 +1,4 @@
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
 import Sidebar from './Components/Sidebar';
 import Header from './Components/Header';
 import GroupQrJoinPage from './Components/GroupQrJoinPage';
@@ -42,6 +41,7 @@ import {
 } from './Util/modalSlice';
 import { useState, lazy, Suspense, useCallback, useEffect } from 'react';
 import AuthPage from './AuthPage';
+import AppInitializer from './Components/AppInitializer';
 
 // 동적 import() 지도가 로딩에 많은 영향을 줌
 const Main = lazy(() => import('./Components/Main'));
@@ -54,7 +54,7 @@ function App() {
   const isMemberModal = useAppSelector((state) => state.modal.memberManager);
   const isBookmarkAddModal = useAppSelector((state) => state.modal.bookmarkAdd);
   const isBookmarkMapAddModal = useAppSelector(
-    (state) => state.modal.bookmarkMapAdd
+    (state) => state.modal.bookmarkMapAdd,
   );
   const isGroupAddModal = useAppSelector((state) => state.modal.groupAdd);
   const isGroupModifyModal = useAppSelector((state) => state.modal.groupModify);
@@ -62,49 +62,49 @@ function App() {
   const isMyPage = useAppSelector((state) => state.modal.myPage);
   const isQRCodeModal = useAppSelector((state) => state.modal.QRCodeModal);
   const isGroupParticipation = useAppSelector(
-    (state) => state.modal.groupParticipationModal
+    (state) => state.modal.groupParticipationModal,
   );
   const isGroupDeleteModal = useAppSelector(
-    (state) => state.modal.groupDeleteModal
+    (state) => state.modal.groupDeleteModal,
   );
   const isGroupExitModal = useAppSelector(
-    (state) => state.modal.groupExitModal
+    (state) => state.modal.groupExitModal,
   );
   const isBookmarkModifyModal = useAppSelector(
-    (state) => state.modal.bookmarkModifyModal
+    (state) => state.modal.bookmarkModifyModal,
   );
   const isOwnershipTransferModal = useAppSelector(
-    (state) => state.modal.ownershipTransferModal
+    (state) => state.modal.ownershipTransferModal,
   );
   const isGroupOwnershipTransferModal = useAppSelector(
-    (state) => state.modal.groupOwnershipTransperModal
+    (state) => state.modal.groupOwnershipTransperModal,
   );
 
   const dispatch = useAppDispatch();
 
   const [view, setView] = useState<View>('home');
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(
-    localStorage.getItem('token')
+    localStorage.getItem('token'),
   );
   const handleNavigate = useCallback((next: View) => setView(next), []);
 
   // 최소 5초 로딩 화면
-  useEffect(() => {
-    const showLoading = () => {
-      setLoading(true);
-      const timer = setTimeout(() => setLoading(false), 5000);
-      return () => clearTimeout(timer);
-    };
+  // useEffect(() => {
+  //   const showLoading = () => {
+  //     setLoading(true);
+  //     const timer = setTimeout(() => setLoading(false), 2);
+  //     return () => clearTimeout(timer);
+  //   };
 
-    const timer = setTimeout(() => setLoading(false), 5000);
-    window.addEventListener('reload-loading', showLoading);
+  //   const timer = setTimeout(() => setLoading(false), 2);
+  //   window.addEventListener('reload-loading', showLoading);
 
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('reload-loading', showLoading);
-    };
-  }, []);
+  //   return () => {
+  //     clearTimeout(timer);
+  //     window.removeEventListener('reload-loading', showLoading);
+  //   };
+  // }, []);
 
   useEffect(() => {
     const handleStorage = () => {
@@ -125,21 +125,23 @@ function App() {
             element={
               token ? (
                 <>
-                  <div className="flex bg-gray-50 min-h-screen">
-                    <div className="sticky">
-                      <Sidebar view={view} onNavigate={handleNavigate} />
+                  <AppInitializer>
+                    <div className="flex bg-gray-50 min-h-screen">
+                      <div className="sticky">
+                        <Sidebar view={view} onNavigate={handleNavigate} />
+                      </div>
+                      <div className="flex-1 flex flex-col overflow-hidden">
+                        <Header />
+                        <main className="flex-1 overflow-y-auto">
+                          <Suspense
+                            fallback={<div className="p-6">로딩 중...</div>}
+                          >
+                            {view === 'home' ? <Main /> : <BookmarkMap />}
+                          </Suspense>
+                        </main>
+                      </div>
                     </div>
-                    <div className="flex-1 flex flex-col overflow-hidden">
-                      <Header />
-                      <main className="flex-1 overflow-y-auto">
-                        <Suspense
-                          fallback={<div className="p-6">로딩 중...</div>}
-                        >
-                          {view === 'home' ? <Main /> : <BookmarkMap />}
-                        </Suspense>
-                      </main>
-                    </div>
-                  </div>
+                  </AppInitializer>
                   {/* 북마크 추가 모달 */}
                   <Modal
                     isOpen={isBookmarkAddModal}
@@ -270,36 +272,6 @@ function App() {
           />
         </Routes>
       </BrowserRouter>
-
-      {/* 로딩 애니메이션 */}
-      <AnimatePresence>
-        {loading && (
-          <motion.div
-            className="fixed inset-0 flex items-center justify-center bg-white z-50"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="flex space-x-2">
-              {[0, 1, 2].map((i) => (
-                <motion.span
-                  key={i}
-                  className="w-3 h-3 bg-violet-500 rounded-full"
-                  animate={{
-                    y: [0, -6, 0],
-                    opacity: [0.3, 1, 0.3],
-                  }}
-                  transition={{
-                    duration: 0.6,
-                    repeat: Infinity,
-                    delay: i * 0.2,
-                  }}
-                />
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 }

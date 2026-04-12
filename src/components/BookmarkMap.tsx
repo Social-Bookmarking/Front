@@ -45,7 +45,7 @@ const BookmarkMap = () => {
   const cursor = useAppSelector((state) => state.bookmarkMap.cursor);
   const hasNext = useAppSelector((state) => state.bookmarkMap.hasNext);
   const selectedGroupId = useAppSelector(
-    (state) => state.group.selectedGroupId
+    (state) => state.group.selectedGroupId,
   );
   const selectedCategory = useAppSelector(selectSelectedId);
   const userPermission = useAppSelector((state) => state.user.permission);
@@ -56,7 +56,7 @@ const BookmarkMap = () => {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   const totalElements = bookmarks.filter(
-    (b) => b.latitude != null && b.longitude != null
+    (b) => b.latitude != null && b.longitude != null,
   ).length;
 
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -75,7 +75,7 @@ const BookmarkMap = () => {
         groupId: selectedGroupId,
         categoryId: selectedCategory,
         cursor: null,
-      })
+      }),
     );
   }, [dispatch, selectedCategory, selectedGroupId]);
 
@@ -88,7 +88,7 @@ const BookmarkMap = () => {
         categoryId: -1,
         cursor: cursor,
         keyword: searchKeyword,
-      })
+      }),
     );
   };
 
@@ -117,8 +117,8 @@ const BookmarkMap = () => {
               bookmarkId: b.bookmarkId,
               lat: b.latitude as number,
               lng: b.longitude as number,
-            }))
-        )
+            })),
+        ),
       );
     }
   }, [bookmarks, dispatch]);
@@ -168,8 +168,6 @@ const BookmarkMap = () => {
     const lat = Number(p.y);
     const lng = Number(p.x);
 
-    console.log(lat, lng);
-
     const center = new kakao.maps.LatLng(lat, lng);
 
     map.relayout();
@@ -181,7 +179,7 @@ const BookmarkMap = () => {
         addMarker({
           lat,
           lng,
-        })
+        }),
       );
     }
   };
@@ -205,7 +203,7 @@ const BookmarkMap = () => {
         categoryId: -1,
         cursor: null,
         keyword,
-      })
+      }),
     )
       .unwrap()
       .then((res) => {
@@ -227,14 +225,13 @@ const BookmarkMap = () => {
           bookmarkId,
           latitude: -1,
           longitude: -1,
-        })
+        }),
       );
 
       dispatch(removeMapBookmark(bookmarkId));
 
       toast.success('북마크가 삭제되었습니다.');
-    } catch (err) {
-      console.log(err);
+    } catch {
       toast.error('삭제에 실패했습니다.');
     }
   };
@@ -278,7 +275,7 @@ const BookmarkMap = () => {
                   addMarker({
                     lat: latlng.getLat(),
                     lng: latlng.getLng(),
-                  })
+                  }),
                 );
               }
             }}
@@ -317,7 +314,7 @@ const BookmarkMap = () => {
                         }
                         const center = new kakao.maps.LatLng(
                           m.position.lat,
-                          m.position.lng
+                          m.position.lng,
                         );
                         map.setCenter(center);
                         dispatch(toggleOpen(m.id));
@@ -392,7 +389,7 @@ const BookmarkMap = () => {
                             setBookMarkMapAdd({
                               open: true,
                               marker: m,
-                            })
+                            }),
                           )
                         }
                       >
@@ -436,7 +433,7 @@ const BookmarkMap = () => {
                       </div>
                     </div>
                   </CustomOverlayMap>
-                )
+                ),
             )}
           </Map>
 
@@ -448,7 +445,7 @@ const BookmarkMap = () => {
               더 보기 (
               {
                 bookmarks.filter(
-                  (b) => b.latitude != null && b.longitude != null
+                  (b) => b.latitude != null && b.longitude != null,
                 ).length
               }
               /{totalElements})

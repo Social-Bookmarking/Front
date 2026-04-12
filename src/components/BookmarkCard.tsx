@@ -63,7 +63,7 @@ const BookmarkCard = ({
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
-          }
+          },
         );
       } else {
         await axios.delete(
@@ -72,11 +72,10 @@ const BookmarkCard = ({
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
-          }
+          },
         );
       }
-    } catch (err) {
-      console.log(err);
+    } catch {
       toast.error('좋아요 도중 오류가 발생했습니다.');
     }
   };
@@ -128,7 +127,10 @@ const BookmarkCard = ({
               className="absolute text-gray-400 w-4 h-4 bottom-3 right-9 hover:text-violet-700"
               onClick={() =>
                 dispatch(
-                  setBookMarkModifyModal({ open: true, bookmardId: bookmarkId })
+                  setBookMarkModifyModal({
+                    open: true,
+                    bookmardId: bookmarkId,
+                  }),
                 )
               }
             />
