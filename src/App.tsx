@@ -2,25 +2,7 @@ import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Sidebar from './Components/Sidebar';
 import Header from './Components/Header';
 import GroupQrJoinPage from './Components/GroupQrJoinPage';
-
-// 모달
-import Modal from './Util/modal';
-import CategoryAddModal from './Modal/CategoryAddModal';
-import MemberSettingsModal from './Modal/MemberSettingsModal';
-import BookmarkAddModal from './Modal/BookmarkAddModal';
-import BookmarkMapAddModal from './Modal/BookmarkMapAddModal';
-import GroupAddModal from './Modal/GroupAddModal';
-import GroupModifyModal from './Modal/GroupModifyModal';
-import CommentModal from './Modal/CommentModal';
-import MyPage from './Modal/MyPage';
-import QRCodeModal from './Modal/QRCodeModal';
-import GroupParticipation from './Modal/GroupParticipation';
-import GroupDeleteModal from './Modal/GroupDelete';
-import GroupExitModal from './Modal/GroupExit';
-import BookmarkModifyModal from './Modal/BookmarkModifyModal';
-import OwnershipTransferModal from './Modal/OwnershipTransferModal';
-import GroupOwnershipTransferModal from './Modal/GroupOwnershipTransferModal';
-
+import ModalLoading from './Components/ModalLoading';
 import { useAppSelector, useAppDispatch } from './Util/hook';
 import {
   setcategoryAdd,
@@ -40,12 +22,34 @@ import {
   setGroupOwnershipTransferModal,
 } from './Util/modalSlice';
 import { useState, lazy, Suspense, useCallback, useEffect } from 'react';
-import AuthPage from './AuthPage';
 import AppInitializer from './Components/AppInitializer';
+
+// 모달
+import Modal from './Util/modal';
+const CategoryAddModal = lazy(() => import('./Modal/CategoryAddModal'));
+const MemberSettingsModal = lazy(() => import('./Modal/MemberSettingsModal'));
+const BookmarkAddModal = lazy(() => import('./Modal/BookmarkAddModal'));
+const BookmarkMapAddModal = lazy(() => import('./Modal/BookmarkMapAddModal'));
+const GroupAddModal = lazy(() => import('./Modal/GroupAddModal'));
+const GroupModifyModal = lazy(() => import('./Modal/GroupModifyModal'));
+const CommentModal = lazy(() => import('./Modal/CommentModal'));
+const MyPage = lazy(() => import('./Modal/MyPage'));
+const QRCodeModal = lazy(() => import('./Modal/QRCodeModal'));
+const GroupParticipation = lazy(() => import('./Modal/GroupParticipation'));
+const GroupDeleteModal = lazy(() => import('./Modal/GroupDelete'));
+const GroupExitModal = lazy(() => import('./Modal/GroupExit'));
+const BookmarkModifyModal = lazy(() => import('./Modal/BookmarkModifyModal'));
+const OwnershipTransferModal = lazy(
+  () => import('./Modal/OwnershipTransferModal'),
+);
+const GroupOwnershipTransferModal = lazy(
+  () => import('./Modal/GroupOwnershipTransferModal'),
+);
 
 // 동적 import() 지도가 로딩에 많은 영향을 줌
 const Main = lazy(() => import('./Components/Main'));
 const BookmarkMap = lazy(() => import('./Components/BookmarkMap'));
+const AuthPage = lazy(() => import('./AuthPage'));
 
 type View = 'home' | 'map';
 
@@ -89,23 +93,6 @@ function App() {
   );
   const handleNavigate = useCallback((next: View) => setView(next), []);
 
-  // 최소 5초 로딩 화면
-  // useEffect(() => {
-  //   const showLoading = () => {
-  //     setLoading(true);
-  //     const timer = setTimeout(() => setLoading(false), 2);
-  //     return () => clearTimeout(timer);
-  //   };
-
-  //   const timer = setTimeout(() => setLoading(false), 2);
-  //   window.addEventListener('reload-loading', showLoading);
-
-  //   return () => {
-  //     clearTimeout(timer);
-  //     window.removeEventListener('reload-loading', showLoading);
-  //   };
-  // }, []);
-
   useEffect(() => {
     const handleStorage = () => {
       setToken(localStorage.getItem('token'));
@@ -118,7 +105,14 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<AuthPage />} />
+          <Route
+            path="/login"
+            element={
+              <Suspense fallback={null}>
+                <AuthPage />
+              </Suspense>
+            }
+          />
           <Route path="/group/qr/join" element={<GroupQrJoinPage />} />
           <Route
             path="/*"
@@ -147,7 +141,9 @@ function App() {
                     isOpen={isBookmarkAddModal}
                     onClose={() => dispatch(setBookMarkAdd(false))}
                   >
-                    <BookmarkAddModal />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isBookmarkAddModal && <BookmarkAddModal />}
+                    </Suspense>
                   </Modal>
 
                   {/* 카테고리 추가 모달 */}
@@ -155,14 +151,18 @@ function App() {
                     isOpen={isCategoryModal}
                     onClose={() => dispatch(setcategoryAdd(false))}
                   >
-                    <CategoryAddModal />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isCategoryModal && <CategoryAddModal />}
+                    </Suspense>
                   </Modal>
                   {/* 멤버 관리 모달 */}
                   <Modal
                     isOpen={isMemberModal}
                     onClose={() => dispatch(setMemberManger(false))}
                   >
-                    <MemberSettingsModal />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isMemberModal && <MemberSettingsModal />}
+                    </Suspense>
                   </Modal>
 
                   {/* 맵 북마크 추가 모달 */}
@@ -170,7 +170,9 @@ function App() {
                     isOpen={isBookmarkMapAddModal}
                     onClose={() => dispatch(setBookMarkMapAdd({ open: false }))}
                   >
-                    <BookmarkMapAddModal />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isBookmarkMapAddModal && <BookmarkMapAddModal />}
+                    </Suspense>
                   </Modal>
 
                   {/* 그룹 추가 모달 */}
@@ -178,7 +180,9 @@ function App() {
                     isOpen={isGroupAddModal}
                     onClose={() => dispatch(setGroupAdd(false))}
                   >
-                    <GroupAddModal />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isGroupAddModal && <GroupAddModal />}
+                    </Suspense>
                   </Modal>
 
                   {/* 그룹 수정 모달 */}
@@ -186,7 +190,9 @@ function App() {
                     isOpen={isGroupModifyModal}
                     onClose={() => dispatch(setGroupModify(false))}
                   >
-                    <GroupModifyModal />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isGroupModifyModal && <GroupModifyModal />}
+                    </Suspense>
                   </Modal>
 
                   {/* 댓글창 모달 */}
@@ -194,7 +200,9 @@ function App() {
                     isOpen={isCommentModal}
                     onClose={() => dispatch(setCommentModal({ open: false }))}
                   >
-                    <CommentModal />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isCommentModal && <CommentModal />}
+                    </Suspense>
                   </Modal>
 
                   {/* 마이페이지 */}
@@ -202,7 +210,9 @@ function App() {
                     isOpen={isMyPage}
                     onClose={() => dispatch(setMyPage(false))}
                   >
-                    <MyPage />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isMyPage && <MyPage />}
+                    </Suspense>
                   </Modal>
 
                   {/* QR 초대 모달 */}
@@ -210,7 +220,9 @@ function App() {
                     isOpen={isQRCodeModal}
                     onClose={() => dispatch(setQRcodeModal(false))}
                   >
-                    <QRCodeModal />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isQRCodeModal && <QRCodeModal />}
+                    </Suspense>
                   </Modal>
 
                   {/* 그룹 초대 모달 */}
@@ -218,7 +230,9 @@ function App() {
                     isOpen={isGroupParticipation}
                     onClose={() => dispatch(setGroupParticipationModal(false))}
                   >
-                    <GroupParticipation />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isGroupParticipation && <GroupParticipation />}
+                    </Suspense>
                   </Modal>
 
                   {/* 그룹 삭제 모달 */}
@@ -226,7 +240,9 @@ function App() {
                     isOpen={isGroupDeleteModal}
                     onClose={() => dispatch(setGroupDeleteModal(false))}
                   >
-                    <GroupDeleteModal />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isGroupDeleteModal && <GroupDeleteModal />}
+                    </Suspense>
                   </Modal>
 
                   {/* 그룹 탈퇴 모달 */}
@@ -234,7 +250,9 @@ function App() {
                     isOpen={isGroupExitModal}
                     onClose={() => dispatch(setGroupExitModal(false))}
                   >
-                    <GroupExitModal />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isGroupExitModal && <GroupExitModal />}
+                    </Suspense>
                   </Modal>
 
                   {/* 북마크 수정 모달 */}
@@ -244,7 +262,9 @@ function App() {
                       dispatch(setBookMarkModifyModal({ open: false }))
                     }
                   >
-                    <BookmarkModifyModal />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isBookmarkModifyModal && <BookmarkModifyModal />}
+                    </Suspense>
                   </Modal>
 
                   {/* 회원탈퇴 전 소유자 이전 */}
@@ -254,7 +274,9 @@ function App() {
                       dispatch(setOwnershipTransferModal({ open: false }))
                     }
                   >
-                    <OwnershipTransferModal />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isOwnershipTransferModal && <OwnershipTransferModal />}
+                    </Suspense>
                   </Modal>
                   <Modal
                     isOpen={isGroupOwnershipTransferModal}
@@ -262,7 +284,11 @@ function App() {
                       dispatch(setGroupOwnershipTransferModal(false))
                     }
                   >
-                    <GroupOwnershipTransferModal />
+                    <Suspense fallback={<ModalLoading />}>
+                      {isGroupOwnershipTransferModal && (
+                        <GroupOwnershipTransferModal />
+                      )}
+                    </Suspense>
                   </Modal>
                 </>
               ) : (
