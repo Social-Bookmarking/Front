@@ -22,7 +22,6 @@ const GroupParticipation = () => {
   const [joining, setJoining] = useState(false);
 
   const handleCheckCode = async (code?: string) => {
-    console.log('실행');
     const targetCode = code || inviteCode;
     if (!targetCode.trim()) return toast.error('초대 코드를 입력하세요.');
 
@@ -35,7 +34,7 @@ const GroupParticipation = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-        }
+        },
       );
       setGroupInfo(res.data);
     } catch (error) {
@@ -62,7 +61,7 @@ const GroupParticipation = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-        }
+        },
       );
 
       await dispatch(fetchGroups());

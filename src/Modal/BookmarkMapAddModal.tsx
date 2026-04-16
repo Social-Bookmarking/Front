@@ -17,7 +17,7 @@ const BookmarkMapAddModal = () => {
 
   const context = useAppSelector((state) => state.modal.bookmarkMapContext);
   const selectedGroupId = useAppSelector(
-    (state) => state.group.selectedGroupId
+    (state) => state.group.selectedGroupId,
   );
   const selectedCategory = useAppSelector(selectSelectedId);
 
@@ -33,11 +33,11 @@ const BookmarkMapAddModal = () => {
           bookmarkId,
           latitude: context.position.lat,
           longitude: context.position.lng,
-        })
+        }),
       ).unwrap();
 
       const updatedBookmark = bookmarks.find(
-        (b) => b.bookmarkId === bookmarkId
+        (b) => b.bookmarkId === bookmarkId,
       );
 
       if (
@@ -55,8 +55,7 @@ const BookmarkMapAddModal = () => {
 
       toast.success('북마크가 추가되었습니다.');
       dispatch(setBookMarkMapAdd({ open: false }));
-    } catch (err) {
-      console.log(err);
+    } catch {
       toast.error('추가에 실패했습니다.');
     }
   };
@@ -70,7 +69,7 @@ const BookmarkMapAddModal = () => {
         categoryId: -1,
         cursor: null,
         keyword: keyword,
-      })
+      }),
     );
   }, [dispatch, selectedGroupId, keyword]);
 
@@ -83,7 +82,7 @@ const BookmarkMapAddModal = () => {
         categoryId: -1,
         cursor: cursor,
         keyword: keyword,
-      })
+      }),
     );
   };
 

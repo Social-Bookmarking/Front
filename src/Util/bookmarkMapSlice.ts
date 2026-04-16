@@ -66,11 +66,10 @@ export const fetchBookmarksMap = createAsyncThunk<
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-      }
+      },
     );
-    console.log(data);
     return data;
-  }
+  },
 );
 
 const bookmarMapSlice = createSlice({
@@ -85,7 +84,7 @@ const bookmarMapSlice = createSlice({
     },
     addMapBookmark(state, action: PayloadAction<Bookmark>) {
       const exists = state.items.some(
-        (b) => b.bookmarkId === action.payload.bookmarkId
+        (b) => b.bookmarkId === action.payload.bookmarkId,
       );
       if (!exists) {
         state.items.unshift(action.payload);

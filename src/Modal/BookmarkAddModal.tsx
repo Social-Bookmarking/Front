@@ -58,7 +58,7 @@ const BookmarkAddModal = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-        }
+        },
       );
 
       const { presignedUrl, fileKey } = res.data;
@@ -67,8 +67,7 @@ const BookmarkAddModal = () => {
       });
 
       return fileKey;
-    } catch (err) {
-      console.error('기본 이미지 업로드 오류:', err);
+    } catch {
       toast.error('기본 이미지 업로드 중 오류가 발생했습니다.');
       return null;
     }
@@ -81,8 +80,7 @@ const BookmarkAddModal = () => {
         name: 'clipboard-read' as PermissionName,
       });
       return result.state === 'granted' || result.state === 'prompt';
-    } catch (err) {
-      console.log('권한 API 지원 안함', err);
+    } catch {
       return false;
     }
   };
@@ -136,7 +134,7 @@ const BookmarkAddModal = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
-        }
+        },
       );
 
       const data = res.data;
@@ -164,8 +162,6 @@ const BookmarkAddModal = () => {
       setTitle(data.title.slice(0, 100) || '');
       setDescription(data.description.slice(0, 5000) || '');
     } catch (err) {
-      console.error(err);
-
       if (axios.isAxiosError(err) && err.response?.status === 500) {
         const defaultKey = await uploadDefaultImage();
         if (defaultKey) {
@@ -216,7 +212,7 @@ const BookmarkAddModal = () => {
             //멱등성 보장 -> uuid 자동 생성
             'Idempotency-Key': idempotencyKeyRef.current,
           },
-        }
+        },
       );
 
       const newBookmark = res.data;
@@ -229,8 +225,7 @@ const BookmarkAddModal = () => {
       }
 
       dispatch(setBookMarkAdd(false));
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('저장 실패!');
     }
   };
@@ -290,7 +285,7 @@ const BookmarkAddModal = () => {
                     `제목은 ${MAX_TITLE_LENGTH}자까지만 저장됩니다.`,
                     {
                       id: 'title-length-error',
-                    }
+                    },
                   );
                   setTitle(value.slice(0, MAX_TITLE_LENGTH));
                   return;
@@ -319,7 +314,7 @@ const BookmarkAddModal = () => {
                     `설명은 ${MAX_DESCRIPTION_LENGTH}자까지만 저장됩니다.`,
                     {
                       id: 'description-length-error',
-                    }
+                    },
                   );
                   setDescription(value.slice(0, MAX_DESCRIPTION_LENGTH));
                   return;
@@ -391,7 +386,7 @@ const BookmarkAddModal = () => {
                       `태그는 ${MAX_TAG_LENGTH}자까지만 저장됩니다.`,
                       {
                         id: 'tag-length-error',
-                      }
+                      },
                     );
                     return tag.slice(0, MAX_TAG_LENGTH);
                   }
@@ -403,7 +398,7 @@ const BookmarkAddModal = () => {
                     `태그는 최대 ${MAX_TAG_COUNT}개까지만 등록됩니다.`,
                     {
                       id: 'tag-count-error',
-                    }
+                    },
                   );
                 }
 

@@ -4,6 +4,7 @@ import { setQRcodeModal } from '../Util/modalSlice';
 import { QrCode, Download } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../Util/hook';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 const QRCodeModal = () => {
   const groupId = useAppSelector(selectSelectedGroup);
@@ -23,11 +24,11 @@ const QRCodeModal = () => {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
               Accept: 'image/png',
             },
-          }
+          },
         );
         setQrUrl(URL.createObjectURL(res.data));
-      } catch (err) {
-        console.error('QR 요청 실패', err);
+      } catch {
+        toast.error('QR 요청 실패');
       }
     };
     fetchQR();

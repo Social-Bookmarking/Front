@@ -63,12 +63,12 @@ const AuthPage = () => {
         const res = await axios.post(
           'https://www.marksphere.link/api/auth/login',
           { username: nickname, password },
-          { withCredentials: true }
+          { withCredentials: true },
         );
 
         localStorage.setItem('token', res.data.accessToken);
         window.dispatchEvent(new Event('storage'));
-        window.dispatchEvent(new Event('reload-loading'));
+        // window.dispatchEvent(new Event('reload-loading'));
 
         const pendingCode = localStorage.getItem('pendingInviteCode');
         if (pendingCode) {
@@ -77,8 +77,7 @@ const AuthPage = () => {
         } else {
           navigate('/');
         }
-      } catch (err) {
-        console.error('axios 에러:', err);
+      } catch {
         toast.error('로그인에 실패했습니다.\n 다시 시도해주세요.');
       } finally {
         setGlobalCursor('default');
@@ -161,7 +160,7 @@ const AuthPage = () => {
                     `닉네임은 ${MAX_NICKNAME_LENGTH}자까지만 저장됩니다.`,
                     {
                       id: 'nickname-length-error',
-                    }
+                    },
                   );
                   setNickname(value.slice(0, MAX_NICKNAME_LENGTH));
                   return;

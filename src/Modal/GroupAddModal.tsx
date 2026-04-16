@@ -26,11 +26,11 @@ const GroupAddModal = () => {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
             'Idempotency-Key': idempotencyKeyRef.current,
           },
-        }
+        },
       );
       await dispatch(fetchGroups());
-    } catch (err) {
-      console.log(err);
+    } catch {
+      toast.error('오류가 발생했습니다.');
     }
     dispatch(setGroupAdd(false));
   };
@@ -54,7 +54,7 @@ const GroupAddModal = () => {
                 `그룹 이름은 ${MAX_GROUP_LENGTH}자까지만 저장됩니다.`,
                 {
                   id: 'groupname-length-error',
-                }
+                },
               );
               setGroupName(value.slice(0, MAX_GROUP_LENGTH));
               return;
@@ -82,7 +82,7 @@ const GroupAddModal = () => {
                 `그룹 설명은 ${MAX_DESCRIPTION_LENGTH}자까지만 저장됩니다.`,
                 {
                   id: 'groupDescription-length-error',
-                }
+                },
               );
               setDescription(value.slice(0, MAX_DESCRIPTION_LENGTH));
               return;

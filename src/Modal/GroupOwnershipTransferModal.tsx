@@ -38,7 +38,7 @@ const GroupOwnershipTransferModal = () => {
       await axios.post(
         `https://www.marksphere.link/api/groups/${selectedGroupId}/transfer-ownership`,
         { newOwnerId: selected },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       toast.success(`"${selectedGroup?.groupName}"의 소유권이 이전되었습니다.`);
@@ -46,14 +46,13 @@ const GroupOwnershipTransferModal = () => {
 
       await axios.delete(
         `https://www.marksphere.link/api/groups/${selectedGroupId}/leave`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       toast.success(`"${selectedGroup?.groupName}" 그룹에서 탈퇴했습니다.`);
       await dispatch(fetchGroups());
       dispatch(setGroupOwnershipTransferModal(false));
       dispatch(setGroupExitModal(false));
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('소유권 이전 중 오류가 발생했습니다.');
     }
   };

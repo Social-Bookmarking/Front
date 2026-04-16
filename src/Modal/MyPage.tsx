@@ -32,7 +32,7 @@ const MyPage = () => {
   };
 
   const [tab, setTab] = useState<'profile' | 'security' | 'myBookmark'>(
-    'profile'
+    'profile',
   );
   const dispatch = useAppDispatch();
 
@@ -55,7 +55,7 @@ const MyPage = () => {
   const created = useAppSelector((state) => state.userBookmark.created);
   const liked = useAppSelector((state) => state.userBookmark.liked);
   const [bookmarkView, setBookmarkView] = useState<'created' | 'liked'>(
-    'created'
+    'created',
   );
 
   // 이미지 관련
@@ -107,8 +107,7 @@ const MyPage = () => {
       setPreviewUrl(URL.createObjectURL(file));
       setImageFile(file);
       setIsImageDeleted(false);
-    } catch (err) {
-      console.log(err);
+    } catch {
       toast.error('이미지 문제가 발생했습니다.');
     } finally {
       setUploading(false);
@@ -129,8 +128,8 @@ const MyPage = () => {
         setNewPassword('');
         setConfirmPassword('');
       })
-      .catch((err) => {
-        console.log(err);
+      .catch(() => {
+        toast.error('비밀번호 변경이 실패했습니다.');
       });
   };
 
@@ -157,7 +156,7 @@ const MyPage = () => {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
-          }
+          },
         );
 
         const { presignedUrl, fileKey } = res.data;
@@ -183,8 +182,8 @@ const MyPage = () => {
             dispatch(fetchMembers(selectedGroupId));
           }
         });
-    } catch (err) {
-      console.error(err);
+    } catch {
+      toast.error('오류가 발생했습니다.');
     } finally {
       setUploading(false);
       setGlobalCursor('default');
@@ -201,12 +200,11 @@ const MyPage = () => {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
           withCredentials: true,
-        }
+        },
       );
       localStorage.removeItem('token');
       window.location.href = '/login';
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('로그아웃 중 오류가 발생했습니다.');
     }
   };
@@ -227,10 +225,9 @@ const MyPage = () => {
           setOwnershipTransferModal({
             open: true,
             groups: requiredActionGroups || [],
-          })
+          }),
         );
       } else {
-        console.error(err);
         toast.error('회원탈퇴 중 오류가 발생했습니다.');
       }
     }
@@ -361,7 +358,7 @@ const MyPage = () => {
                         `닉네임은 ${MAX_NICKNAME_LENGTH}자까지만 저장됩니다.`,
                         {
                           id: 'nickname-length-error',
-                        }
+                        },
                       );
                       setNickname(value.slice(0, MAX_NICKNAME_LENGTH));
                       return;

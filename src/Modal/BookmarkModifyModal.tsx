@@ -22,15 +22,15 @@ const BookmarkModifyModal = () => {
 
   const dispatch = useAppDispatch();
   const bookmarkId = useAppSelector(
-    (state) => state.modal.bookmarkModifybookmarkId
+    (state) => state.modal.bookmarkModifybookmarkId,
   );
 
   const categories = useAppSelector(selectCategories);
   const bookmark = useAppSelector((state) =>
-    state.bookmark.items.find((b) => b.bookmarkId === bookmarkId)
+    state.bookmark.items.find((b) => b.bookmarkId === bookmarkId),
   );
   const selectedGroupId = useAppSelector(
-    (state) => state.group.selectedGroupId
+    (state) => state.group.selectedGroupId,
   );
 
   const [title, setTitle] = useState('');
@@ -116,7 +116,7 @@ const BookmarkModifyModal = () => {
             headers: {
               Authorization: `Bearer ${localStorage.getItem('token')}`,
             },
-          }
+          },
         );
 
         const { presignedUrl, fileKey } = res.data;
@@ -139,8 +139,7 @@ const BookmarkModifyModal = () => {
 
       toast.success('북마크가 수정되었습니다');
       dispatch(setBookMarkModifyModal({ open: false }));
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('북마크 수정에 실패했습니다');
     } finally {
       setUploading(false);
@@ -236,7 +235,7 @@ const BookmarkModifyModal = () => {
                   `설명은 ${MAX_DESCRIPTION_LENGTH}자까지만 저장됩니다.`,
                   {
                     id: 'description-length-error',
-                  }
+                  },
                 );
                 setDescription(value.slice(0, MAX_DESCRIPTION_LENGTH));
                 return;
@@ -320,7 +319,7 @@ const BookmarkModifyModal = () => {
                   `태그는 최대 ${MAX_TAG_COUNT}개까지만 등록됩니다.`,
                   {
                     id: 'tag-count-error',
-                  }
+                  },
                 );
               }
 

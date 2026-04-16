@@ -13,8 +13,6 @@ axios.interceptors.response.use(
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
 
-      console.log('함수 작동');
-
       if (status === 401) {
         // 로그인 요청에서 난 401은 그대로 reject
         if (error.config?.url?.includes('/auth/login')) {
@@ -36,7 +34,7 @@ axios.interceptors.response.use(
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
               },
               withCredentials: true,
-            } // 쿠키 포함
+            }, // 쿠키 포함
           );
           const newAccessToken = refreshRes.data.accessToken;
           localStorage.setItem('token', newAccessToken);
@@ -62,7 +60,7 @@ axios.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 createRoot(document.getElementById('root')!).render(
@@ -71,5 +69,5 @@ createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <App />
     </StrictMode>
-  </Provider>
+  </Provider>,
 );
